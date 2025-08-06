@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import AuthLayout from "@/components/layout/AuthLayout";
 import CustomInput from "@/components/custom/Input/CustomInput";
 import CustomMessageBox from "@/components/custom/Input/CustomMessageBox";
-import { Button } from "@/components/ui/button";
 import CustomLink from "@/components/custom/CustomLink";
-import { useFetch } from "@/hooks/useFetch";
+import { Button } from "@/components/ui/button";
+import { requestPasswordReset } from "@/lib/supabase/api/auth";
+import { useWhitelabelStore } from "@/stores/whitelabel";
 
 export default function ForgotPassword() {
-  const t = useTranslation("request_password_reset");
-  const generalTranslate = useTranslation("general");
-  const customFetch = useFetch();
+  const { t } = useTranslation("request_password_reset");
+  const { t: generalTranslate } = useTranslation("general");
+  const companyStore = useWhitelabelStore((state) => state.company);
 
   const [formState, setFormState] = useState({
     email: "",
@@ -32,16 +32,16 @@ export default function ForgotPassword() {
     setMessage(null);
 
     try {
-      const response = await customFetch("/api/auth/request_password_reset", {
-        method: "POST",
-        body: { email: formState.email },
+      const response = await requestPasswordReset({
+        email: formState.email,
+        company_id: companyStore?.id || "",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response?.error) {
+        const { error } = response as unknown as { error: { key: string } };
         setMessage({
           text:
-            generalTranslate(errorData.key) ||
+            generalTranslate(error.key) ||
             generalTranslate("error_occurred"),
           type: "error",
         });
@@ -59,43 +59,41 @@ export default function ForgotPassword() {
   };
 
   return (
-    <AuthLayout>
-      <div className="flex flex-col gap-6 max-w-md w-full justify-center align-center">
-        <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
-          <CustomMessageBox
-            message={message?.text}
-            type={message?.type || "error"}
-          />
+    <div className="flex flex-col gap-6 max-w-md w-full justify-center align-center">
+      <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
+        <CustomMessageBox
+          message={message?.text}
+          type={message?.type || "error"}
+        />
 
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
-            <p className="text-muted-foreground text-sm text-balance">
-              {t("subtitle")}
-            </p>
-          </div>
-          <CustomInput
-            name="email"
-            label={t("email_label")}
-            type="email"
-            value={formState.email}
-            onChange={(value) => handleInputChange("email", value)}
-            disabled={loading || success}
-            required
-          />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading || success}
-          >
-            {loading ? t("button_loading") : t("button")}
-          </Button>
-        </form>
-        <div className="text-center text-sm mt-4">
-          <CustomLink href="/auth/signin" className="underline underline-offset-4">
-            {t("back_to_login")}
-          </CustomLink>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground text-sm text-balance">
+            {t("subtitle")}
+          </p>
         </div>
+        <CustomInput
+          name="email"
+          label={t("email_label")}
+          type="email"
+          value={formState.email}
+          onChange={(value) => handleInputChange("email", value)}
+          disabled={loading || success}
+          required
+        />
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading || success}
+        >
+          {loading ? t("button_loading") : t("button")}
+        </Button>
+      </form>
+      <div className="text-center text-sm mt-4">
+        <CustomLink href="/auth/signin" className="underline underline-offset-4">
+          {t("back_to_login")}
+        </CustomLink>
       </div>
-    </AuthLayout>
+    </div>
   );
 }

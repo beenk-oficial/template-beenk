@@ -33,7 +33,7 @@ export default function CustomForm({
   onSubmit,
 }: CustomFormProps) {
   const isMobile = useIsMobile();
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

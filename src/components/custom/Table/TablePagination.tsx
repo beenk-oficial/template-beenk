@@ -26,7 +26,7 @@ export default function TablePagination({
   onPageChange: (pageIndex: number, pageSize: number) => void;
   disabled: boolean;
 }) {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
 
   const handlePageChange = (pageIndex: number) => {
     onPageChange(pageIndex, pagination.itemsPerPage);

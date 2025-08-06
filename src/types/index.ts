@@ -107,6 +107,7 @@ export type User = {
   is_banned?: boolean;
   is_active?: boolean;
   type: UserType;
+  company_id?: string;
 } & Timestamps;
 
 export type Timestamps = {

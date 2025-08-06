@@ -124,7 +124,7 @@ export default function CustomTableBody({
   };
   onRowSelectionChange?: (selectedRows: unknown[]) => void;
 }) {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
 
   const renderContent = () => {
     if (loading) {

@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import "@/styles/globals.css";
-import "@/styles/spinner.css";
+import "@/assets/styles/globals.css";
+import "@/assets/styles/spinner.css";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { getLocale, messages, defaultLocale } from "@/lib/i18n";

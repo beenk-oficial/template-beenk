@@ -1,8 +1,7 @@
-import AdminLayout from "@/components/layout/AdminLayout";
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
 import  { type IPagination, SortOrder, SubscriptionStatus } from "@/types";
-import { useFetch } from "@/hooks/useFetch";
+
 import { Badge } from "@/components/ui/badge";
 import {
   IconCircleCheckFilled,
@@ -15,10 +14,11 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { formatToLocaleDate } from "@/utils";
+import { useSession } from "@/hooks/useSession";
 
 export default function Page() {
-  const t = useTranslation("general");
-  const customFetch = useFetch();
+  const {t} = useTranslation("general");
+  const { companyId } = useSession();
   const [data, setData] = useState([]);
 
   const [pagination, setPagination] = useState<IPagination>({
@@ -141,23 +141,22 @@ export default function Page() {
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await customFetch("/api/admin/subscriptions", {
-        query: {
-          page: updatedPagination?.currentPage ?? pagination.currentPage,
-          perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
-          sortField: updatedPagination?.sortField ?? pagination.sortField,
-          sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
-          search: updatedPagination?.search ?? pagination.search,
-        },
+      const { getSubscriptionPaginated } = await import("@/lib/supabase/api/admin/subscription");
+      const response = await getSubscriptionPaginated({
+        company_id: companyId || "",
+        page: updatedPagination?.currentPage ?? pagination.currentPage,
+        perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
+        sortField: updatedPagination?.sortField ?? pagination.sortField,
+        sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
+        search: updatedPagination?.search ?? pagination.search,
       });
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data);
+      if (!response.error) {
+        setData(response.data);
         setPagination((prev) => ({
           ...prev,
-          currentTotalItems: result.pagination.currentTotalItems,
-          totalItems: result.pagination.totalItems,
-          totalPages: result.pagination.totalPages,
+          currentTotalItems: response.pagination.currentTotalItems,
+          totalItems: response.pagination.totalItems,
+          totalPages: response.pagination.totalPages,
         }));
       }
     } catch (error) {
@@ -177,7 +176,6 @@ export default function Page() {
   };
 
   return (
-    <AdminLayout>
       <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
         <CustomTable
           data={data}
@@ -187,6 +185,5 @@ export default function Page() {
           onRequest={handleRequest}
         />
       </div>
-    </AdminLayout>
   );
 }

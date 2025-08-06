@@ -36,7 +36,7 @@ export function CustomTable({
   onAddItem?: () => void;
   onRemoveItens?: (selectedRows: unknown[]) => void;
 }) {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
   const [search, setSearch] = useState("");
 
   const handleSortChange = (field: string, order: SortOrder) => {

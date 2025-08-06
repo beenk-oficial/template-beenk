@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 import { formatToLocaleDate } from "@/utils";
 
 export default function Page() {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
   const customFetch = useFetch();
   const [data, setData] = useState([]);
 

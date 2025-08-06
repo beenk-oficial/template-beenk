@@ -16,11 +16,11 @@ import { useSession } from "@/hooks/useSession";
 import { useWhitelabel } from "@/hooks/useWhitelabel";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import { useFetch } from "@/hooks/useFetch";
 import { useUserStore } from "@/stores/user";
 import { setCookie } from "@/utils";
-import type { User, UserType } from "@/types";
-import {  useNavigate, useLocation } from "react-router-dom";
+import { type User, UserType } from "@/types";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { logout } from "@/lib/supabase/api/auth";
 
 enum AdminRoutes {
   Dashboard = "/admin/dashboard",
@@ -38,34 +38,28 @@ enum AdminRoutes {
   Settings = "/admin/settings",
 }
 
-export default function AdminLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function AdminLayout() {
   const { whitelabel } = useWhitelabel();
   const { user } = useSession();
-  const t = useTranslation();
-  const customFetch = useFetch();
+  const { t } = useTranslation("general");
   const setUser = useUserStore((state) => state.setUser);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (user?.type !== UserType.ADMIN) handleLogout();
+    console.log("User type:", user?.type);
   }, [user, location.pathname]);
 
-  //@TODO: Finish endpoint to logout user
-  // and remove access and refresh tokens from cookies.
   function handleLogout() {
-    customFetch("/api/auth/logout", {
-      method: "POST",
-    }).then(() => {
+      logout({
+        email: user?.email || "",
+        company_id: user?.company_id || "",
+      });
       setUser(null as unknown as User);
       setCookie("accessToken", "", 3600);
       setCookie("refreshToken", "", 604800);
-      navigate("/login");
-    });
+      navigate("/auth/signin");
   }
 
   const sidebarData = {
@@ -89,74 +83,74 @@ export default function AdminLayout({
     ],
     navMain: [
       {
-        title: t("general.dashboard"),
+        title: t("dashboard"),
         url: AdminRoutes.Dashboard,
         icon: LayoutDashboard,
         isActive: location.pathname === AdminRoutes.Dashboard,
       },
       {
-        title: t("general.manage_users"),
+        title: t("manage_users"),
         url: AdminRoutes.Users,
         icon: Users,
         isActive: location.pathname === AdminRoutes.Users,
       },
       {
-        title: t("general.plans"),
+        title: t("plans"),
         url: AdminRoutes.Plans,
         icon: Tag,
         isActive: location.pathname === AdminRoutes.Plans,
       },
       {
-        title: t("general.subscriptions"),
+        title: t("subscriptions"),
         url: AdminRoutes.Subscriptions,
         icon: Package,
         isActive: location.pathname === AdminRoutes.Subscriptions,
       },
       {
-        title: t("general.payments"),
+        title: t("payments"),
         url: AdminRoutes.Payments,
         icon: CreditCard,
         isActive: location.pathname === AdminRoutes.Payments,
       },
       {
-        title: t("general.invoices"),
+        title: t("invoices"),
         url: AdminRoutes.Invoices,
         icon: FileText,
         isActive: location.pathname === AdminRoutes.Invoices,
       },
       {
-        title: t("general.promo_codes"),
+        title: t("promo_codes"),
         url: AdminRoutes.PromoCodes,
         icon: Tag,
         isActive: location.pathname === AdminRoutes.PromoCodes,
       },
       {
-        title: t("general.referrals"),
+        title: t("referrals"),
         url: AdminRoutes.Referrals,
         icon: Share,
         isActive: location.pathname === AdminRoutes.Referrals,
       },
       {
-        title: t("general.access_control"),
+        title: t("access_control"),
         url: AdminRoutes.Roles,
         icon: Shield,
         isActive: location.pathname === AdminRoutes.Roles,
       },
       {
-        title: t("general.settings"),
+        title: t("settings"),
         icon: Settings,
         isActive: location.pathname.startsWith(AdminRoutes.Settings),
         items: [
           {
-            title: t("general.company"),
+            title: t("company"),
             url: AdminRoutes.SettingsCompany,
           },
           {
-            title: t("general.whitelabel"),
+            title: t("whitelabel"),
             url: AdminRoutes.SettingsWhitelabel,
           },
           {
-            title: t("general.billing"),
+            title: t("billing"),
             url: AdminRoutes.SettingsBilling,
           },
         ],
@@ -166,7 +160,7 @@ export default function AdminLayout({
 
   const activeItem =
     sidebarData.navMain.find((item) => item.isActive)?.title ||
-    t("general.dashboard");
+    t("dashboard");
 
   return (
     <SidebarProvider
@@ -182,7 +176,8 @@ export default function AdminLayout({
         <SiteHeader activeTitle={activeItem} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            {children}
+            <Outlet />
+
           </div>
         </div>
       </SidebarInset>

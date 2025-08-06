@@ -3,23 +3,25 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { GoogleLogo } from "phosphor-react";
 import { useUserStore } from "@/stores/user";
-import  { type User, UserType } from "@/types";
+import { type User, UserType } from "@/types";
 import CustomLink from "@/components/custom/CustomLink";
 import { getCookieValue, normalizeLink, setCookie } from "@/utils";
 import CustomInput from "@/components/custom/Input/CustomInput";
 import CustomCheckbox from "@/components/custom/Input/CustomCheckbox";
 import CustomMessageBox from "@/components/custom/Input/CustomMessageBox";
-import { useFetch } from "@/hooks/useFetch";
 import { useNavigate, useParams } from "react-router-dom";
+import { signinWithEmail, signinWithGoogle } from "@/lib/supabase/api/auth";
+import { useWhitelabelStore } from "@/stores/whitelabel";
 
-//@TODO: Set cookie of authentication access to recover session
-// and redirect to the correct page based on user type.
 
 export default function SignIn() {
   const { t } = useTranslation("login");
   const { t: generalTranslate } = useTranslation("general");
+  const navigate = useNavigate();
+  const params = useParams();
 
   const setUser = useUserStore((state) => state.setUser);
+  const companyStore = useWhitelabelStore((state) => state.company);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,10 +29,6 @@ export default function SignIn() {
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const customFetch = useFetch();
-  const navigate = useNavigate();
-  const params = useParams();
 
   useEffect(() => {
     const savedEmail = getCookieValue("userEmail");
@@ -42,8 +40,8 @@ export default function SignIn() {
   }, []);
 
   const handleGoogleLogin = async () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!;
+    const clientId = import.meta.env.VITE_PUBLIC_GOOGLE_CLIENT_ID!;
+    const redirectUri = import.meta.env.VITE_PUBLIC_GOOGLE_REDIRECT_URI!;
 
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid%20profile%20email`;
 
@@ -68,24 +66,27 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const response = await customFetch("/api/auth/google", {
-        method: "POST",
-        body: { code },
-      });
+      const response =  await signinWithGoogle({
+        code,
+        company_id: companyStore?.id || "",
+      })
 
-      if (!response.ok) {
-        setErrorMessage(generalTranslate("error_occurred"));
+      if (response?.error) {
+        const { error } = response as unknown as { error: { key: string } };
+        setErrorMessage(
+          generalTranslate(error.key) || generalTranslate("error_occurred")
+        );
         setLoading(false);
         return;
       }
 
-      const { user, token } = await response.json();
+      const { user, token } = response;
       setUser(user as User);
 
-      setCookie("accessToken", token.access_token, 3600);
-      setCookie("refreshToken", token.refresh_token, 604800);
+      setCookie("accessToken", token?.access_token || "", 3600);
+      setCookie("refreshToken", token?.refresh_token || "", 604800);
 
-      redirectUserByType(user.type);
+      redirectUserByType(user?.type);
     } catch (error) {
       setErrorMessage(generalTranslate("error_occurred"));
     } finally {
@@ -108,31 +109,29 @@ export default function SignIn() {
     setErrorMessage(null);
 
     try {
-      const response = await customFetch("/api/auth/login", {
-        method: "POST",
-        body: {
-          email,
-          password,
-        },
+      const response = await signinWithEmail({
+        email,
+        password,
+        company_id: companyStore?.id || "",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response?.error) {
+        const { error } = response as unknown as { error: { key: string } };
         setErrorMessage(
-          generalTranslate(errorData.key) || generalTranslate("error_occurred")
+          generalTranslate(error.key) || generalTranslate("error_occurred")
         );
         setLoading(false);
         return;
       }
 
-      const { user, token } = await response.json();
+      const { user, token } = response;
       setUser(user as unknown as User);
 
-      setCookie("accessToken", token.access_token, 3600);
-      setCookie("refreshToken", token.refresh_token, 604800);
+      setCookie("accessToken", token?.access_token || "", 3600);
+      setCookie("refreshToken", token?.refresh_token || "", 604800);
       setCookie("userEmail", email, rememberMe ? 604800 : 0);
 
-      redirectUserByType(user.type);
+      redirectUserByType(user?.type);
     } catch (error) {
       setErrorMessage(generalTranslate("error_occurred"));
     } finally {
@@ -141,77 +140,77 @@ export default function SignIn() {
   };
 
   return (
-      <form
-        className="flex flex-col gap-6 max-w-md w-full justify-center align-center"
-        onSubmit={handleEmailLogin}
-      >
-        <CustomMessageBox message={errorMessage} type="error" />
+    <form
+      className="flex flex-col gap-6 max-w-md w-full justify-center align-center"
+      onSubmit={handleEmailLogin}
+    >
+      <CustomMessageBox message={errorMessage} type="error" />
 
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-bold">{t("login_title")}</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            {t("login_subtitle")}
-          </p>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-bold">{t("login_title")}</h1>
+        <p className="text-muted-foreground text-sm text-balance">
+          {t("login_subtitle")}
+        </p>
+      </div>
+      <div className="grid gap-6">
+        <CustomInput
+          name="email"
+          label={t("email_label")}
+          type="email"
+          value={email}
+          onChange={setEmail}
+          disabled={loading}
+          required
+        />
+        <CustomInput
+          label={t("password_label")}
+          name="password"
+          type="password"
+          value={password}
+          onChange={setPassword}
+          disabled={loading}
+          additionalElement={
+            <CustomLink
+              href="/auth/forgot-password"
+              className="ml-auto text-sm underline-offset-4 hover:underline"
+            >
+              {t("forgot_password")}
+            </CustomLink>
+          }
+          required
+        />
+        <CustomCheckbox
+          name="rememberMe"
+          value={rememberMe}
+          label={t("remember_me")}
+          disabled={loading}
+          onChange={(checked) => setRememberMe(checked as boolean)}
+        />
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? generalTranslate("loading") : t("login_button")}
+        </Button>
+        <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+          <span className="bg-background text-muted-foreground relative z-10 px-2">
+            {t("login_with")}
+          </span>
         </div>
-        <div className="grid gap-6">
-          <CustomInput
-            name="email"
-            label={t("email_label")}
-            type="email"
-            value={email}
-            onChange={setEmail}
-            disabled={loading}
-            required
-          />
-          <CustomInput
-            label={t("password_label")}
-            name="password"
-            type="password"
-            value={password}
-            onChange={setPassword}
-            disabled={loading}
-            additionalElement={
-              <CustomLink
-                href="/auth/request_password_reset"
-                className="ml-auto text-sm underline-offset-4 hover:underline"
-              >
-                {t("forgot_password")}
-              </CustomLink>
-            }
-            required
-          />
-          <CustomCheckbox
-            name="rememberMe"
-            value={rememberMe}
-            label={t("remember_me")}
-            disabled={loading}
-            onChange={(checked) => setRememberMe(checked as boolean)}
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? generalTranslate("loading") : t("login_button")}
-          </Button>
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-background text-muted-foreground relative z-10 px-2">
-              {t("login_with")}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full flex items-center gap-2 hover:bg-red-400"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            type="button"
-          >
-            <GoogleLogo size={24} weight="bold" />
-            {t("continue_with_google")}
-          </Button>
-        </div>
-        <div className="text-center text-sm">
-          {t("signup_prompt")}{" "}
-          <CustomLink href="/auth/signup" className="underline underline-offset-4">
-            {t("signup_link")}
-          </CustomLink>
-        </div>
-      </form>
+        <Button
+          variant="outline"
+          className="w-full flex items-center gap-2 hover:bg-red-400"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          type="button"
+        >
+          <GoogleLogo size={24} weight="bold" />
+          {t("continue_with_google")}
+        </Button>
+      </div>
+      <div className="text-center text-sm">
+        {t("signup_prompt")}{" "}
+        <CustomLink href="/auth/signup" className="underline underline-offset-4">
+          {t("signup_link")}
+        </CustomLink>
+      </div>
+    </form>
   );
 }

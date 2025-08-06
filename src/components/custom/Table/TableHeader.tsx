@@ -28,7 +28,7 @@ export default function CustomTableHeader({
   onSortChange: (field: string, order: SortOrder) => void;
   onRowSelectionChange?: (selectedRows: unknown[]) => void;
 }) {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
 
   const handleSort = (field: string) => {
     const newOrder =

@@ -1,8 +1,6 @@
-import AdminLayout from "@/components/layout/AdminLayout";
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import type { IPagination, SortOrder, User } from "@/types";
-import { useFetch } from "@/hooks/useFetch";
+import { type IPagination, SortOrder, type User } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import {
   IconCircleCheckFilled,
@@ -14,16 +12,18 @@ import {
 import { useTranslation } from "react-i18next";
 import Form from "./form";
 import { ConfirmDeleteDialog } from "@/components/custom/Dialog/CustomDialog";
+import { getUserPaginated } from "@/lib/supabase/api/admin/user";
+import { useSession } from "@/hooks/useSession";
 
 export default function Page() {
-  const t = useTranslation("general");
-  const customFetch = useFetch();
+  const { t } = useTranslation("general");
   const [data, setData] = useState([]);
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [toDelete, setToDelete] = useState<string[] | null>(null);
+  const { companyId } = useSession();
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "full_name",
@@ -136,23 +136,22 @@ export default function Page() {
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await customFetch("/api/admin/users", {
-        query: {
-          page: updatedPagination?.currentPage ?? pagination.currentPage,
-          perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
-          sortField: updatedPagination?.sortField ?? pagination.sortField,
-          sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
-          search: updatedPagination?.search ?? pagination.search,
-        },
+      const response = await getUserPaginated({
+        company_id: companyId || "",
+        page: updatedPagination?.currentPage ?? pagination.currentPage,
+        perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
+        sortField: updatedPagination?.sortField ?? pagination.sortField,
+        sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
+        search: updatedPagination?.search ?? pagination.search,
       });
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data);
+
+      if (!response.error) {
+        setData(response.data);
         setPagination((prev) => ({
           ...prev,
-          currentTotalItems: result.pagination.currentTotalItems,
-          totalItems: result.pagination.totalItems,
-          totalPages: result.pagination.totalPages,
+          currentTotalItems: response.pagination.currentTotalItems,
+          totalItems: response.pagination.totalItems,
+          totalPages: response.pagination.totalPages,
         }));
       } else {
         console.error("Failed to fetch users");
@@ -211,33 +210,31 @@ export default function Page() {
   };
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <CustomTable
-          data={data}
-          columns={columns}
-          pagination={pagination}
-          selected={selected}
-          loading={loading}
-          actions={actions}
-          onRowSelectionChange={setSelected}
-          onRequest={handleRequest}
-          onRemoveItens={handleRemoveUsers}
-        />
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <CustomTable
+        data={data}
+        columns={columns}
+        pagination={pagination}
+        selected={selected}
+        loading={loading}
+        actions={actions}
+        onRowSelectionChange={setSelected}
+        onRequest={handleRequest}
+        onRemoveItens={handleRemoveUsers}
+      />
 
-        <Form
-          open={open}
-          data={editingUser}
-          onOpenChange={setOpen}
-          onSubmit={handleSubmitUser}
-        />
+      <Form
+        open={open}
+        data={editingUser}
+        onOpenChange={setOpen}
+        onSubmit={handleSubmitUser}
+      />
 
-        <ConfirmDeleteDialog
-          open={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onConfirm={handleConfirmDelete}
-        />
-      </div>
-    </AdminLayout>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+      />
+    </div>
   );
 }

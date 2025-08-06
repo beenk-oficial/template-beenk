@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import type { User, UserType } from "@/types";
+import { type User, UserType } from "@/types";
 import CustomForm from "@/components/custom/Input/CustomForm";
 import CustomInput from "@/components/custom/Input/CustomInput";
 import { useTranslation } from "react-i18next";
@@ -18,7 +18,7 @@ export default function Form({
   onOpenChange?: (open: boolean) => void;
   onSubmit?: (formData: Partial<User>) => void;
 }) {
-  const t = useTranslation("general") || ((key: string) => key);
+  const {t} = useTranslation("general") || ((key: string) => key);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState<Partial<User>>({

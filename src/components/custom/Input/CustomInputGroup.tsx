@@ -27,15 +27,15 @@ const CustomInputGroup: React.FC<CustomInputProps> = ({
           labelPosition === "left" ? "flex items-center " : "grid"
         }`}
       >
-        {label && (
+        {(label || additionalElement) && (
           <div
             className={`flex items-center ${
               labelPosition === "left" ? "order-last" : "order-first"
             }`}
           >
-            <Label htmlFor={htmlFor}>
+            {label && <Label htmlFor={htmlFor}>
               {label} {required && <span className="text-red-500">*</span>}
-            </Label>
+            </Label>}
             {additionalElement && (
               <div className="ml-auto">{additionalElement}</div>
             )}

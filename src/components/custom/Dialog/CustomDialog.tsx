@@ -46,7 +46,7 @@ export const ConfirmDeleteDialog = ({
   onOpenChange,
   onConfirm,
 }: ConfirmDeleteDialogProps) => {
-  const t = useTranslation("general");
+  const {t} = useTranslation("general");
   return (
     <CustomDialog open={open} onOpenChange={onOpenChange}>
       <DialogHeader>

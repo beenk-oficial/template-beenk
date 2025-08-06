@@ -23,7 +23,7 @@ const routes = createBrowserRouter([
     children: [
       { path: "signin", Component: SignIn },
       { path: "signup", Component: SignUp },
-      { path: "forget-password", Component: ForgotPassword },
+      { path: "forgot-password", Component: ForgotPassword },
       { path: "reset-password", Component: ResetPassword },
     ],
   },
