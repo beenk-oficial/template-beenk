@@ -117,6 +117,7 @@ export default function SignIn() {
 
       if (response?.error) {
         const { error } = response as unknown as { error: { key: string } };
+        console.log("error")
         setErrorMessage(
           generalTranslate(error.key) || generalTranslate("error_occurred")
         );
