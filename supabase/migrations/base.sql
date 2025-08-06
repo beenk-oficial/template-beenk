@@ -1,3 +1,27 @@
+CREATE TYPE user_type AS ENUM ('admin', 'user', 'owner', 'guest');
+CREATE TYPE company_status AS ENUM ('active', 'inactive', 'suspended', 'pending');
+CREATE TYPE notification_type AS ENUM ('info', 'warning', 'success', 'error');
+CREATE TYPE auth_provider AS ENUM ('email', 'google');
+CREATE TYPE subscription_owner_type AS ENUM ('user', 'company');
+CREATE TYPE subscription_status AS ENUM (
+    'incomplete',
+    'incomplete_expired',
+    'trialing',
+    'active',
+    'past_due',
+    'canceled',
+    'unpaid'
+);
+CREATE TYPE referral_status AS ENUM ('pending', 'accepted', 'rewarded');
+CREATE TYPE invoice_status AS ENUM (
+    'draft',
+    'open',
+    'paid',
+    'uncollectible',
+    'void'
+);
+CREATE TYPE discount_type AS ENUM ('percentage', 'fixed');
+CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed');
 
 CREATE TABLE IF NOT EXISTS addresses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
