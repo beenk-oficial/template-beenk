@@ -1,7 +1,6 @@
-import AdminLayout from "@/components/layout/AdminLayout";
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import type { IPagination, SortOrder, User, SubscriptionStatus } from "@/types";
+import { type IPagination, SortOrder, SubscriptionStatus } from "@/types";
 import { useFetch } from "@/hooks/useFetch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +16,7 @@ import { useTranslation } from "react-i18next";
 import { formatToLocaleDate } from "@/utils";
 
 export default function Page() {
-  const {t} = useTranslation("general");
+  const { t } = useTranslation("general");
   const customFetch = useFetch();
   const [data, setData] = useState([]);
 
@@ -96,7 +95,7 @@ export default function Page() {
     {
       label: t("status"),
       field: "status",
-      component: ({ row }: { row: any}) => renderStatus(row, t),
+      component: ({ row }: { row: any }) => renderStatus(row, t),
     },
     {
       label: t("plan"),
@@ -177,16 +176,14 @@ export default function Page() {
   };
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <CustomTable
-          data={data}
-          columns={columns}
-          pagination={pagination}
-          loading={loading}
-          onRequest={handleRequest}
-        />
-      </div>
-    </AdminLayout>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <CustomTable
+        data={data}
+        columns={columns}
+        pagination={pagination}
+        loading={loading}
+        onRequest={handleRequest}
+      />
+    </div>
   );
 }

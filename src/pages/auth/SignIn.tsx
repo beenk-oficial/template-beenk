@@ -80,11 +80,8 @@ export default function SignIn() {
         return;
       }
 
-      const { user, token } = response;
+      const { user } = response;
       setUser(user as User);
-
-      setCookie("accessToken", token?.access_token || "", 3600);
-      setCookie("refreshToken", token?.refresh_token || "", 604800);
 
       redirectUserByType(user?.type);
     } catch (error) {
@@ -124,11 +121,9 @@ export default function SignIn() {
         return;
       }
 
-      const { user, token } = response;
+      const { user } = response;
       setUser(user as unknown as User);
-
-      setCookie("accessToken", token?.access_token || "", 3600);
-      setCookie("refreshToken", token?.refresh_token || "", 604800);
+      
       setCookie("userEmail", email, rememberMe ? 604800 : 0);
 
       redirectUserByType(user?.type);

@@ -3,10 +3,13 @@ import type { Company } from "@/types";
 import { supabase } from "@/lib/supabase";
 import { SignJWT, type JWTPayload } from 'jose';
 import { jwtDecode } from "jwt-decode";
-import { getCookieValue } from "@/utils";
+import { getCookieValue, setCookie } from "@/utils";
 
 const accessSecret = import.meta.env.VITE_ACCESS_TOKEN_SECRET!;
 const refreshSecret = import.meta.env.VITE_REFRESH_TOKEN_SECRET!;
+
+const ACCESS_TOKEN_EXPIRATION = 3600000 * 7; // 7 horas em ms
+const REFRESH_TOKEN_EXPIRATION = 604800000;  // 7 dias em ms
 
 async function generateJwtToken(
     payload: JWTPayload,
@@ -127,6 +130,7 @@ export async function signinWithEmail(data: {
         user_id: user.id,
         email: user.email,
         company_id: company_id,
+        type: user.type,
         provider: "email",
     }, accessSecret, '1h');
 
@@ -134,6 +138,7 @@ export async function signinWithEmail(data: {
         user_id: user.id,
         email: user.email,
         company_id: company_id,
+        type: user.type,
         provider: "email",
     }, refreshSecret, '7d');
 
@@ -142,9 +147,9 @@ export async function signinWithEmail(data: {
         .from("authentications")
         .update({
             access_token: accessToken,
-            access_token_expires_at: new Date(Date.now() + 3600000),
+            access_token_expires_at: new Date(Date.now() + ACCESS_TOKEN_EXPIRATION),
             refresh_token: refreshToken,
-            refresh_token_expires_at: new Date(Date.now() + 604800000),
+            refresh_token_expires_at: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION),
             last_login: new Date(),
         })
         .eq("id", authentication.id);
@@ -156,14 +161,12 @@ export async function signinWithEmail(data: {
         };
     }
 
-    generateAudioLog(authentication.id, "login", user)
+    generateAudioLog(authentication.id, "login", user);
+    setCookie("accessToken", accessToken, ACCESS_TOKEN_EXPIRATION / 1000);
+    setCookie("refreshToken", refreshToken, REFRESH_TOKEN_EXPIRATION / 1000);
 
     return {
-        user,
-        token: {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        },
+        user
     };
 
 }
@@ -319,6 +322,7 @@ export async function signinWithGoogle(data: {
         user_id: user?.id,
         email: user?.email,
         company_id,
+        type: user?.type,
         provider: "google",
     }, accessSecret, '1h');
 
@@ -326,6 +330,7 @@ export async function signinWithGoogle(data: {
         user_id: user?.id,
         email: user?.email,
         company_id,
+        type: user?.type,
         provider: "google",
     }, refreshSecret, '7d');
 
@@ -334,9 +339,9 @@ export async function signinWithGoogle(data: {
         .from("authentications")
         .update({
             access_token: accessToken,
-            access_token_expires_at: new Date(Date.now() + 3600000),
+            access_token_expires_at: new Date(Date.now() + ACCESS_TOKEN_EXPIRATION),
             refresh_token: refreshToken,
-            refresh_token_expires_at: new Date(Date.now() + 604800000),
+            refresh_token_expires_at: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION),
             last_login: new Date(),
         })
         .eq("email", email)
@@ -350,12 +355,11 @@ export async function signinWithGoogle(data: {
 
     generateAudioLog(authentication.id, "login", user)
 
+    setCookie("accessToken", accessToken, ACCESS_TOKEN_EXPIRATION / 1000);
+    setCookie("refreshToken", refreshToken, REFRESH_TOKEN_EXPIRATION / 1000);
+
     return {
         user,
-        token: {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        },
     };
 }
 
@@ -465,7 +469,7 @@ export async function requestPasswordReset(data: {
     try {
         const { data: user, error: userError } = await supabase
             .from("users")
-            .select("id, email, company_id")
+            .select("id, email, company_id, type")
             .eq("email", email)
             .eq("company_id", company_id)
             .single();
@@ -478,7 +482,7 @@ export async function requestPasswordReset(data: {
         }
 
         const resetToken = await generateJwtToken(
-            { user_id: user.id, email, company_id },
+            { user_id: user.id, email, company_id, type: user.type },
             accessSecret,
             '7h'
         );
@@ -487,7 +491,7 @@ export async function requestPasswordReset(data: {
             .from("authentications")
             .update({
                 reset_token: resetToken,
-                expires_reset_token_at: new Date(Date.now() + (3600000 * 7)),
+                expires_reset_token_at: new Date(Date.now() + ACCESS_TOKEN_EXPIRATION),
             })
             .eq("user_id", user.id)
             .eq("provider", "email");
@@ -660,12 +664,26 @@ export async function logout(data: { company_id: string; email: string }) {
             email,
         });
 
+        setCookie("accessToken", "", ACCESS_TOKEN_EXPIRATION / 1000);
+        setCookie("refreshToken", "", REFRESH_TOKEN_EXPIRATION / 1000);
+
         return true;
     } catch (error) {
         return { error: "Unexpected error occurred", key: "error_occurred" };
     }
 }
 
+
+export function forceLogout() {
+    let slug = "";
+
+    //@TODO - Get slug from the current route or context
+
+    setCookie("accessToken", "", ACCESS_TOKEN_EXPIRATION / 1000);
+    setCookie("refreshToken", "", REFRESH_TOKEN_EXPIRATION / 1000);
+
+    window.location.href = slug ? `/${slug}/auth/signin` : "/auth/signin";
+}
 
 export async function refreshToken() {
     const refreshToken = getCookieValue("refreshToken");
@@ -682,11 +700,12 @@ export async function refreshToken() {
             user_id: string;
             company_id: string;
             email: string;
+            type: string;
         };
 
-        const { user_id, company_id, email } = decoded;
+        const { user_id, company_id, email, type } = decoded;
 
-        if (!user_id || !company_id || !email) {
+        if (!user_id || !company_id || !email || !type) {
             return {
                 error: "Invalid refresh token",
                 key: "invalid_refresh_token",
@@ -734,13 +753,13 @@ export async function refreshToken() {
         }
 
         const newAccessToken = await generateJwtToken(
-            { user_id, email, company_id, provider: "email" },
+            { user_id, email, company_id, provider: "email", type },
             accessSecret,
             "7h"
         );
 
         const newRefreshToken = await generateJwtToken(
-            { user_id, email, company_id, provider: "email" },
+            { user_id, email, company_id, provider: "email", type },
             refreshSecret,
             "7d"
         );
@@ -749,16 +768,17 @@ export async function refreshToken() {
             .from("authentications")
             .update({
                 access_token: newAccessToken,
-                access_token_expires_at: new Date(Date.now() + 3600000 * 7),
+                access_token_expires_at: new Date(Date.now() + ACCESS_TOKEN_EXPIRATION),
                 refresh_token: newRefreshToken,
-                refresh_token_expires_at: new Date(Date.now() + 604800000),
+                refresh_token_expires_at: new Date(Date.now() + REFRESH_TOKEN_EXPIRATION),
             })
             .eq("id", authentication.id);
 
+        setCookie("accessToken", newAccessToken, ACCESS_TOKEN_EXPIRATION / 1000);
+        setCookie("refreshToken", newRefreshToken, REFRESH_TOKEN_EXPIRATION / 1000);
+
         return {
-            user,
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
+            user
         };
     } catch (error) {
         return {
@@ -828,7 +848,7 @@ export async function sendActivationEmail(data: { email: string, company_id: str
     try {
         const { data: user, error: userError } = await supabase
             .from("users")
-            .select("id, email, is_active")
+            .select("id, email, is_active, type")
             .eq("email", email)
             .eq("company_id", company_id)
             .single();
@@ -842,7 +862,7 @@ export async function sendActivationEmail(data: { email: string, company_id: str
         }
 
         const activationToken = await generateJwtToken(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, type: user.type },
             accessSecret,
             "1h"
         );

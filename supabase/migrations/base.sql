@@ -339,6 +339,7 @@ CREATE TABLE IF NOT EXISTS licenses (
 CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     license_id UUID NOT NULL REFERENCES licenses(id) ON DELETE CASCADE,
+    company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
 
     name TEXT NOT NULL,
     stripe_price_id TEXT UNIQUE NOT NULL,

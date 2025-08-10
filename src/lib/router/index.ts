@@ -10,6 +10,7 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminUsers from "@/pages/admin/users";
+import AdminPlans from "@/pages/admin/plans";
 
 
 const routes = createBrowserRouter([
@@ -34,6 +35,8 @@ const routes = createBrowserRouter([
       { path: "dashboard", Component: AdminDashboard },
       { path: "subscriptions", Component: AdminSubscriptions },
       { path: "users", Component: AdminUsers },
+      { path: "plans", Component: AdminPlans },
+
     ],
   },
 ]);

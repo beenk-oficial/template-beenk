@@ -15,12 +15,13 @@ import {
 import { useSession } from "@/hooks/useSession";
 import { useWhitelabel } from "@/hooks/useWhitelabel";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/stores/user";
-import { setCookie } from "@/utils";
 import { type User, UserType } from "@/types";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import { logout } from "@/lib/supabase/api/auth";
+import { logout, refreshToken } from "@/lib/supabase/api/auth";
+import { Spinner } from "../custom/Spinner";
+import { getCompanyIdFromToken } from "@/utils/api";
 
 enum AdminRoutes {
   Dashboard = "/admin/dashboard",
@@ -45,21 +46,42 @@ export default function AdminLayout() {
   const setUser = useUserStore((state) => state.setUser);
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.type !== UserType.ADMIN) handleLogout();
-    console.log("User type:", user?.type);
+    setLoading(true);
+    const company_id = getCompanyIdFromToken();
+
+    console.log("Company ID from token:", company_id);
+
+    const checkUser = async () => {
+      try {
+        if (!user?.email) {
+          const response = await refreshToken();
+          if (!response.user) handleLogout();
+
+          setUser(response.user as unknown as User);
+
+        } else {
+          if (user?.type !== UserType.ADMIN) handleLogout();
+        }
+
+        setLoading(false);
+      } catch {
+        handleLogout();
+      }
+    };
+
+    checkUser();
   }, [user, location.pathname]);
 
   function handleLogout() {
-      logout({
-        email: user?.email || "",
-        company_id: user?.company_id || "",
-      });
-      setUser(null as unknown as User);
-      setCookie("accessToken", "", 3600);
-      setCookie("refreshToken", "", 604800);
-      navigate("/auth/signin");
+    logout({
+      email: user?.email || "",
+      company_id: user?.company_id || "",
+    });
+    setUser(null as unknown as User);
+    navigate("/auth/signin");
   }
 
   const sidebarData = {
@@ -161,6 +183,14 @@ export default function AdminLayout() {
   const activeItem =
     sidebarData.navMain.find((item) => item.isActive)?.title ||
     t("dashboard");
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-background/20">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider

@@ -18,7 +18,6 @@ export function getCookieValue(key: string): string | null {
   const cookie = document.cookie
     .split("; ")
     .find((row) => row.startsWith(`${key}=`));
-  console.log("Cookie Value:", document.cookie);
   return cookie ? cookie.split("=")[1] : null;
 }
 
