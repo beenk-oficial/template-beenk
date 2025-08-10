@@ -112,8 +112,11 @@ export default function SignIn() {
         company_id: companyStore?.id || "",
       });
 
+      console.log("response", response)
+
       if (response?.error) {
         const { error } = response as unknown as { error: { key: string } };
+        console.log("error", error)
         setErrorMessage(
           generalTranslate(error.key) || generalTranslate("error_occurred")
         );
@@ -128,6 +131,7 @@ export default function SignIn() {
 
       redirectUserByType(user?.type);
     } catch (error) {
+      console.log("catch", error)
       setErrorMessage(generalTranslate("error_occurred"));
     } finally {
       setLoading(false);
