@@ -50,10 +50,6 @@ export default function AdminLayout() {
 
   useEffect(() => {
     setLoading(true);
-    const company_id = getCompanyIdFromToken();
-
-    console.log("Company ID from token:", company_id);
-
     const checkUser = async () => {
       try {
         if (!user?.email) {

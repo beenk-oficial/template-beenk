@@ -156,6 +156,10 @@
     "current_period_start": "Início do período atual",
     "current_period_end": "Fim do período atual",
     "canceled_at": "Cancelado em",
-    "plan": "Plano"
+    "plan": "Plano",
+    "user_deleted": "Usuário removido com sucesso.",
+    "user_updated": "Usuário atualizado com sucesso.",
+    "success": "Sucesso!",
+    "error": "Erro!"
   }
 }

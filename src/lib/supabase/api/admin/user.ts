@@ -1,9 +1,12 @@
 import { supabase } from "@/lib/supabase";
+import { getCompanyIdFromToken } from "@/utils/api";
 
-export async function getUserById(data: { company_id: string; id: string }) {
-    const { company_id, id } = data;
+export async function getUserById(data: { id: string }) {
+    const { id } = data;
 
-    if (!company_id || !id) {
+    const companyId = await getCompanyIdFromToken()
+
+    if (!companyId || !id) {
         return { error: "Missing company_id or user id", key: "missing_params" };
     }
 
@@ -12,7 +15,7 @@ export async function getUserById(data: { company_id: string; id: string }) {
             .from("users")
             .select("*")
             .eq("id", id)
-            .eq("company_id", company_id)
+            .eq("company_id", companyId)
             .single();
 
         if (error || !user) {
@@ -26,15 +29,15 @@ export async function getUserById(data: { company_id: string; id: string }) {
 }
 
 export async function getUserPaginated(data: {
-    company_id: string;
     page?: number;
     perPage?: number;
     sortField?: string;
     sortOrder?: "asc" | "desc";
     search?: string;
 }) {
+    const companyId = await getCompanyIdFromToken()
+
     const {
-        company_id,
         page = 1,
         perPage = 10,
         sortField = "created_at",
@@ -42,8 +45,8 @@ export async function getUserPaginated(data: {
         search = "",
     } = data;
 
-    if (!company_id) {
-        return { error: "Missing company_id", key: "missing_company_id" };
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
 
     try {
@@ -52,7 +55,7 @@ export async function getUserPaginated(data: {
             .select("id,full_name,type,is_active,is_banned,email,created_at", {
                 count: "exact",
             })
-            .eq("company_id", company_id);
+            .eq("company_id", companyId);
 
         if (search) {
             query = query.ilike("full_name", `%${search}%`);
@@ -66,11 +69,7 @@ export async function getUserPaginated(data: {
         const to = from + perPage - 1;
         query = query.range(from, to);
 
-        const { data: users, count, error } = await query;
-
-        if (error) {
-            return { error: "Failed to fetch users", key: "fetch_failed" };
-        }
+        const { data: users, count } = await query;
 
         const totalPages = Math.ceil((count || 0) / perPage);
 
@@ -88,14 +87,16 @@ export async function getUserPaginated(data: {
             },
         };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
-export async function deleteUsers(data: { company_id: string; ids: string[] }) {
-    const { company_id, ids } = data;
+export async function deleteUsers(data: { ids: string[] }) {
+    const companyId = await getCompanyIdFromToken()
 
-    if (!company_id || !ids?.length) {
+    const { ids } = data;
+
+    if (!companyId || !ids?.length) {
         return { error: "Missing company_id or ids", key: "missing_params" };
     }
 
@@ -104,7 +105,7 @@ export async function deleteUsers(data: { company_id: string; ids: string[] }) {
             .from("users")
             .delete()
             .in("id", ids)
-            .eq("company_id", company_id);
+            .eq("company_id", companyId);
 
         if (error) {
             return { error: "Failed to delete users", key: "delete_failed" };
@@ -118,14 +119,15 @@ export async function deleteUsers(data: { company_id: string; ids: string[] }) {
 
 export async function updateUser(data: {
     id: string;
-    company_id: string;
     user_id: string;
     updates: Record<string, any>;
 }) {
-    const { id, company_id, user_id, updates } = data;
+    const companyId = await getCompanyIdFromToken()
 
-    if (!id || !company_id || !user_id || !updates) {
-        return { error: "Missing required fields", key: "missing_fields" };
+    const { id, user_id, updates } = data;
+
+    if (!id || !user_id || !updates) {
+        throw new Error("Missing required fields");
     }
 
     try {
@@ -133,15 +135,15 @@ export async function updateUser(data: {
             .from("users")
             .update({ ...updates, updated_at: new Date(), updated_by: user_id })
             .eq("id", id)
-            .eq("company_id", company_id)
+            .eq("company_id", companyId)
             .single();
 
         if (error) {
-            return { error: "Failed to update user", key: "update_failed" };
+            throw new Error("Failed to update user");
         }
 
         return { user };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }

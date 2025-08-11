@@ -58,6 +58,7 @@ export default function SignUp() {
 
       if (response?.error) {
         const { error } = response as unknown as { error: { key: string } };
+        console.error("Signup error:", error);
         setErrorMessage(
           generalTranslate(error.key) || generalTranslate("error_occurred")
         );
@@ -65,7 +66,7 @@ export default function SignUp() {
         return;
       }
 
-      navigate(normalizeLink("/signin", params));
+      navigate(normalizeLink("/auth/signin", params));
     } catch (error) {
       setErrorMessage(generalTranslate("error_occurred"));
     } finally {

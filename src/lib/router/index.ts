@@ -11,6 +11,10 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminUsers from "@/pages/admin/users";
 import AdminPlans from "@/pages/admin/plans";
+import AppLayout from "@/components/layout/AppLayout";
+
+import AppDashboard from "@/pages/app/dashboard";
+
 
 
 const routes = createBrowserRouter([
@@ -37,6 +41,13 @@ const routes = createBrowserRouter([
       { path: "users", Component: AdminUsers },
       { path: "plans", Component: AdminPlans },
 
+    ],
+  },
+    {
+    path: "app",
+    Component: AppLayout,
+    children: [
+      { path: "dashboard", Component: AppDashboard },
     ],
   },
 ]);

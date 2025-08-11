@@ -12,7 +12,8 @@ import {
 import { useTranslation } from "react-i18next";
 import Form from "./form";
 import { ConfirmDeleteDialog } from "@/components/custom/Dialog/CustomDialog";
-import { getUserPaginated } from "@/lib/supabase/api/admin/user";
+import { getUserPaginated, deleteUsers, updateUser } from "@/lib/supabase/api/admin/user";
+import { useToast } from "@/components/ui/toast";
 import { useSession } from "@/hooks/useSession";
 
 export default function Page() {
@@ -23,7 +24,8 @@ export default function Page() {
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [toDelete, setToDelete] = useState<string[] | null>(null);
-  const { companyId } = useSession();
+  const { userId } = useSession()
+  const toast = useToast();
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "full_name",
@@ -137,7 +139,6 @@ export default function Page() {
     setLoading(true);
     try {
       const response = await getUserPaginated({
-        company_id: companyId || "",
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,
@@ -145,19 +146,15 @@ export default function Page() {
         search: updatedPagination?.search ?? pagination.search,
       });
 
-      if (!response.error) {
-        setData(response.data);
-        setPagination((prev) => ({
-          ...prev,
-          currentTotalItems: response.pagination.currentTotalItems,
-          totalItems: response.pagination.totalItems,
-          totalPages: response.pagination.totalPages,
-        }));
-      } else {
-        console.error("Failed to fetch users");
-      }
+      setData(response.data);
+      setPagination((prev) => ({
+        ...prev,
+        currentTotalItems: response.pagination.currentTotalItems,
+        totalItems: response.pagination.totalItems,
+        totalPages: response.pagination.totalPages,
+      }));
     } catch (error) {
-      console.error("Error fetching users:", error);
+      toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
       setLoading(false);
     }
@@ -165,6 +162,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchData();
+
   }, []);
 
   const handleRequest = (updatedPagination: IPagination) => {
@@ -172,15 +170,25 @@ export default function Page() {
     fetchData(updatedPagination);
   };
 
-  const handleSubmitUser = (formData: Partial<User>) => {
-    if (editingUser) {
-      console.log("Updating user:", { ...editingUser, ...formData });
-      // Implement update logic here
-    } else {
-      console.log("Creating user:", formData);
-      // Implement create logic here
+  const handleSubmitUser = async (formData: Partial<User>) => {
+    try {
+      setLoading(true);
+      await updateUser({
+        id: editingUser?.id as string,
+        user_id: userId as string,
+        updates: formData,
+      });
+
+      toast({ title: t("success"), description: t("user_updated"), type: "success" });
+      fetchData();
+    } catch (error) {
+      toast({ title: t("error"), description: t("error_occurred"), type: "error" });
+    } finally {
+      setOpen(false);
+      setEditingUser(null);
+      setLoading(false);
     }
-    setOpen(false);
+
   };
 
   const handleRemoveUsers = () => {
@@ -192,20 +200,22 @@ export default function Page() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await customFetch("/api/admin/users/delete", {
-        method: "DELETE",
-        body: { ids: toDelete },
-      });
+      setLoading(true);
+      if (toDelete && toDelete.length > 0) {
+        await deleteUsers({
+          ids: toDelete,
+        });
 
-      if (response.ok) {
         fetchData();
         setSelected([]);
+        setToDelete(null);
+        toast({ title: t("success"), description: t("user_deleted"), type: "success" });
       }
     } catch (error) {
-      console.error("Error deleting user(s):", error);
+      toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
-      setToDelete(null);
       setDeleteDialogOpen(false);
+      setLoading(false);
     }
   };
 

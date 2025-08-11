@@ -12,7 +12,6 @@ export async function getCompanyIdFromToken() {
 
     try {
         let decoded = jwtDecode(accessToken);
-        console.log("Decoded JWT:", decoded);
         const now = Date.now() / 1000;
         if (decoded.exp && decoded.exp < now) {
             const response = await refreshToken();
@@ -29,8 +28,8 @@ export async function getCompanyIdFromToken() {
             return (decoded as any)?.company_id || null;
         }
 
-    } catch {
+    } catch(error) {
         forceLogout();
-        return null;
+        throw error;
     }
 }

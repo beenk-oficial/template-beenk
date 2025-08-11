@@ -446,6 +446,7 @@ export async function signup(data: {
             user: newUser,
         };
     } catch (error) {
+        console.error("Signup error:", error);
         return {
             error: "Unexpected error occurred",
             key: "error_occurred",
@@ -689,10 +690,7 @@ export async function refreshToken() {
     const refreshToken = getCookieValue("refreshToken");
 
     if (!refreshToken) {
-        return {
-            error: "Refresh token is required",
-            key: "missing_refresh_token",
-        };
+        throw new Error("Refresh token is required");
     }
 
     try {
@@ -706,10 +704,7 @@ export async function refreshToken() {
         const { user_id, company_id, email, type } = decoded;
 
         if (!user_id || !company_id || !email || !type) {
-            return {
-                error: "Invalid refresh token",
-                key: "invalid_refresh_token",
-            };
+            throw new Error("Invalid refresh token");
         }
 
         const { data: user } = await supabase
@@ -746,10 +741,7 @@ export async function refreshToken() {
             .single();
 
         if (error || !authentication || !user) {
-            return {
-                error: "Invalid refresh token",
-                key: "invalid_refresh_token",
-            };
+            throw new Error("Invalid refresh token");
         }
 
         const newAccessToken = await generateJwtToken(
@@ -781,10 +773,7 @@ export async function refreshToken() {
             user
         };
     } catch (error) {
-        return {
-            error: "Invalid refresh token",
-            key: "invalid_refresh_token",
-        };
+        throw error;
     }
 }
 
@@ -877,3 +866,4 @@ export async function sendActivationEmail(data: { email: string, company_id: str
         return { error: "Unexpected error occurred", key: "error_occurred" };
     }
 }
+        
