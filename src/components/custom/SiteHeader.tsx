@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -8,35 +8,59 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
-export function SiteHeader({ activeTitle }: { activeTitle?: string }) {
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: "Novo comentário", description: "Alguém comentou no seu post.", read: false },
-    { id: 2, title: "Atualização disponível", description: "Versão 2.0 está no ar!", read: false },
-    { id: 3, title: "Backup concluído", description: "", read: true },
-  ]);
+import type { Notification } from "@/types";
+import { getNotifications, markNotificationAsRead } from "@/lib/supabase/api/notification";
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; userId: string }) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  useEffect(() => {
+    if (!userId) return;
+
+    setLoading(true);
+    getNotifications(userId)
+      .then(({ data, error }) => {
+        if (error) {
+          setError("Erro ao carregar notificações.");
+          console.error(error);
+        } else if (data) {
+          setNotifications(data);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  const unreadCount = notifications.filter(n => !n.read_at).length;
+
+  const markAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      setNotifications(prev =>
+        prev.map(n => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+      );
+    } catch (error) {
+      console.log("Erro ao marcar notificação como lida:", error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await Promise.all(notifications.map(n => markNotificationAsRead(n.id)));
+      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+    } catch (error) {
+      console.log("Erro ao marcar todas as notificações como lidas:", error);
+    }
   };
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
-        <Separator
-          orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
-        />
+        <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <h1 className="text-base font-medium">{activeTitle}</h1>
         <div className="ml-auto flex items-center gap-2">
           <DropdownMenu>
@@ -52,19 +76,27 @@ export function SiteHeader({ activeTitle }: { activeTitle?: string }) {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-80">
+              {loading && (
+                <div className="p-4 text-center text-gray-400 text-sm">Carregando...</div>
+              )}
+
+              {error && (
+                <div className="p-4 text-center text-red-500 text-sm">{error}</div>
+              )}
+
+              {!loading && notifications.length === 0 && (
+                <div className="p-4 text-gray-400 text-sm text-center">
+                  Nenhuma notificação
+                </div>
+              )}
+
               {notifications.length > 0 && (
                 <DropdownMenuItem
                   onClick={markAllAsRead}
-                  className="text-blue-600 cursor-pointer font-medium"
+                  className="text-muted-foreground cursor-pointer font-medium"
                 >
                   Marcar todas como lidas
                 </DropdownMenuItem>
-              )}
-
-              {notifications.length === 0 && (
-                <div className="p-4 text-gray-500 text-sm text-center">
-                  Nenhuma notificação
-                </div>
               )}
 
               {notifications.map(notif => (
@@ -75,14 +107,14 @@ export function SiteHeader({ activeTitle }: { activeTitle?: string }) {
                 >
                   <div className="flex items-center gap-2 w-full">
                     <span className="font-medium flex-1">{notif.title}</span>
-                    {!notif.read && (
-                      <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                    {!notif.read_at && (
+                      <span className="text-xs bg-sidebar text-popover-foreground px-2 py-0.5 rounded-full">
                         Novo
                       </span>
                     )}
                   </div>
-                  {notif.description && (
-                    <p className="text-sm text-gray-500">{notif.description}</p>
+                  {notif.message && (
+                    <p className="text-sm text-gray-400">{notif.message}</p>
                   )}
                 </DropdownMenuItem>
               ))}
