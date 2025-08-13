@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -10,50 +10,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import type { Notification } from "@/types";
-import { getNotifications, markNotificationAsRead } from "@/lib/supabase/api/notification";
+import { useNotificationStore } from "@/stores/notification";
 
 export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; userId: string }) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const { notifications, loading, error, fetchNotifications, markAsRead } = useNotificationStore();
 
   useEffect(() => {
-    if (!userId) return;
-
-    setLoading(true);
-    getNotifications(userId)
-      .then(({ data, error }) => {
-        if (error) {
-          setError("Erro ao carregar notificações.");
-          console.error(error);
-        } else if (data) {
-          setNotifications(data);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [userId]);
+    if (userId) fetchNotifications(userId);
+  }, [userId, fetchNotifications]);
 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
-  const markAsRead = async (id: string) => {
-    try {
-      await markNotificationAsRead(id);
-      setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
-      );
-    } catch (error) {
-      console.log("Erro ao marcar notificação como lida:", error);
-    }
-  };
-
   const markAllAsRead = async () => {
-    try {
-      await Promise.all(notifications.map(n => markNotificationAsRead(n.id)));
-      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
-    } catch (error) {
-      console.log("Erro ao marcar todas as notificações como lidas:", error);
-    }
+    await Promise.all(notifications.map(n => markAsRead(n.id)));
   };
 
   return (
@@ -77,7 +46,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
 
             <DropdownMenuContent align="end" className="w-80">
               {loading && (
-                <div className="p-4 text-center text-gray-400 text-sm">Carregando...</div>
+                <div className="p-4 text-center text-muted-foreground text-sm">Carregando...</div>
               )}
 
               {error && (
@@ -85,7 +54,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
               )}
 
               {!loading && notifications.length === 0 && (
-                <div className="p-4 text-gray-400 text-sm text-center">
+                <div className="p-4 text-muted-foreground text-sm text-center">
                   Nenhuma notificação
                 </div>
               )}
