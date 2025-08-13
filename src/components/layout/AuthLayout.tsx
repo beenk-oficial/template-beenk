@@ -25,7 +25,7 @@ export default function AuthLayout() {
         redirectUserByType(response.user.type);
         setLoading(false);
       } catch {
-        console.error("Error refreshing token");
+        setLoading(false);
       }
     };
 
