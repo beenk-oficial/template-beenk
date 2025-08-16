@@ -1,17 +1,18 @@
 
 import { supabase } from "@/lib/supabase";
+import type { SortOrder } from "@/types";
 import { getCompanyIdFromToken } from "@/utils/api";
 
 export async function getPlanById(data: { id: string }) {
     const { id } = data;
-    const company_id = getCompanyIdFromToken();
+    const companyId = await getCompanyIdFromToken();
 
     if (!id) {
-        return { error: "Missing plan id", key: "missing_id" };
+        throw new Error("Missing plan id");
     }
 
-    if (!company_id) {
-        return { error: "Unauthorized", key: "unauthorized" };
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
 
     try {
@@ -19,14 +20,15 @@ export async function getPlanById(data: { id: string }) {
             .from("plans")
             .select("*")
             .eq("id", id)
-            .eq("company_id", company_id)
+            .eq("company_id", companyId)
             .single();
+
         if (error || !plan) {
-            return { error: "Plan not found", key: "plan_not_found" };
+            throw new Error("Plan not found");
         }
         return { plan };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
@@ -34,7 +36,7 @@ export async function getPlansPaginated(data: {
     page?: number;
     perPage?: number;
     sortField?: string;
-    sortOrder?: "asc" | "desc";
+    sortOrder: SortOrder;
     search?: string;
 }) {
     const {
@@ -44,26 +46,32 @@ export async function getPlansPaginated(data: {
         sortOrder = "asc",
         search = "",
     } = data;
-    const company_id = getCompanyIdFromToken();
-    if (!company_id) {
-        return { error: "Unauthorized", key: "unauthorized" };
+
+    const companyId = await getCompanyIdFromToken();
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
+
     try {
         let query = supabase
             .from("plans")
             .select("*", { count: "exact" })
-            .eq("company_id", company_id);
+            .eq("company_id", companyId);
+
         if (search) {
             query = query.ilike("name", `%${search}%`);
         }
+
         query = query.order(sortField, { ascending: sortOrder === "asc" });
         const from = (page - 1) * perPage;
         const to = from + perPage - 1;
         query = query.range(from, to);
         const { data: plans, count, error } = await query;
+
         if (error) {
-            return { error: "Failed to fetch plans", key: "fetch_failed" };
+            throw new Error("Failed to fetch plans");
         }
+
         const totalPages = Math.ceil((count || 0) / perPage);
         return {
             data: plans,
@@ -79,84 +87,87 @@ export async function getPlansPaginated(data: {
             },
         };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
 export async function createPlan(data: Record<string, any>) {
     if (!data) {
-        return { error: "Missing plan data", key: "missing_data" };
+        throw new Error("Missing plan data");
     }
-    const company_id = getCompanyIdFromToken();
-    if (!company_id) {
-        return { error: "Unauthorized", key: "unauthorized" };
+
+    const companyId = await getCompanyIdFromToken();
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
     try {
         const { data: plan, error } = await supabase
             .from("plans")
-            .insert([{ ...data, company_id }])
+            .insert([{ ...data, company_id: companyId}])
             .select()
             .single();
         if (error) {
-            return { error: "Failed to create plan", key: "create_failed" };
+            throw new Error("Failed to create plan");
         }
         return { plan };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
-export async function updatePlan(data: { id: string; updates: Record<string, any> }) {
-    const { id, updates } = data;
-    const company_id = getCompanyIdFromToken();
-    
+export async function updatePlan(data: { id: string; user_id: string; updates: Record<string, any> }) {
+    const { id, user_id, updates } = data;
+    const companyId = await getCompanyIdFromToken();
+
     if (!id || !updates) {
-        return { error: "Missing required fields", key: "missing_fields" };
+        throw new Error("Missing required fields");
     }
 
-    if (!company_id) {
-        return { error: "Unauthorized", key: "unauthorized" };
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
 
     try {
         const { data: plan, error } = await supabase
             .from("plans")
-            .update({ ...updates, updated_at: new Date() })
+            .update({ ...updates, updated_at: new Date(), updated_by: user_id })
             .eq("id", id)
-            .eq("company_id", company_id)
+            .eq("company_id", companyId)
             .select()
             .single();
         if (error) {
-            return { error: "Failed to update plan", key: "update_failed" };
+            throw new Error("Failed to update plan");
         }
         return { plan };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
 export async function deletePlans(data: { ids: string[] }) {
     const { ids } = data;
-    const company_id = getCompanyIdFromToken();
+    const companyId = await getCompanyIdFromToken();
 
     if (!ids?.length) {
-        return { error: "Missing ids", key: "missing_ids" };
+        throw new Error("Missing ids");
     }
 
-    if (!company_id) {
-        return { error: "Unauthorized", key: "unauthorized" };
+    if (!companyId) {
+        throw new Error("Missing company_id");
     }
+
     try {
         const { error } = await supabase
             .from("plans")
             .delete()
             .in("id", ids)
-            .eq("company_id", company_id);
+            .eq("company_id", companyId);
+
         if (error) {
-            return { error: "Failed to delete plans", key: "delete_failed" };
+            throw new Error("Failed to delete plans")
         }
         return true;
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }

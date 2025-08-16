@@ -737,7 +737,6 @@ export async function refreshToken() {
             .from("authentications")
             .select("id")
             .eq("user_id", user_id)
-            .eq("refresh_token", refreshToken)
             .single();
 
         if (error || !authentication || !user) {

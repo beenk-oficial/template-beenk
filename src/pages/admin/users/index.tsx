@@ -18,7 +18,7 @@ import { useSession } from "@/hooks/useSession";
 
 export default function Page() {
   const { t } = useTranslation("general");
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([] as User[]);
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User> | null>(null);
@@ -142,16 +142,16 @@ export default function Page() {
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,
-        sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
+        sortOrder: (updatedPagination?.sortOrder ?? pagination.sortOrder) as SortOrder,
         search: updatedPagination?.search ?? pagination.search,
       });
 
-      setData(response.data);
+      setData((response?.data) ?? []) ;
       setPagination((prev) => ({
         ...prev,
-        currentTotalItems: response.pagination.currentTotalItems,
-        totalItems: response.pagination.totalItems,
-        totalPages: response.pagination.totalPages,
+        currentTotalItems: response.pagination?.currentTotalItems ?? 0,
+        totalItems: response.pagination?.totalItems ?? 0,
+        totalPages: response.pagination?.totalPages ?? 0,
       }));
     } catch (error) {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
@@ -188,7 +188,6 @@ export default function Page() {
       setEditingUser(null);
       setLoading(false);
     }
-
   };
 
   const handleRemoveUsers = () => {

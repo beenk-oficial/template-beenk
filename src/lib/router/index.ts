@@ -11,6 +11,7 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
 import AdminUsers from "@/pages/admin/users";
 import AdminPlans from "@/pages/admin/plans";
+import AdminLicense from "@/pages/admin/license";
 import AppLayout from "@/components/layout/AppLayout";
 
 import AppDashboard from "@/pages/app/dashboard";
@@ -40,7 +41,7 @@ const routes = createBrowserRouter([
       { path: "subscriptions", Component: AdminSubscriptions },
       { path: "users", Component: AdminUsers },
       { path: "plans", Component: AdminPlans },
-
+      { path: "licenses", Component: AdminPlans },
     ],
   },
     {

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
-import { getCompanyIdFromToken } from "@/utils/api";
+import type { SortOrder } from "@/types";
+import { formatDateToDB, getCompanyIdFromToken } from "@/utils/api";
 
 export async function getUserById(data: { id: string }) {
     const { id } = data;
@@ -13,18 +14,18 @@ export async function getUserById(data: { id: string }) {
     try {
         const { data: user, error } = await supabase
             .from("users")
-            .select("*")
+            .select("id, full_name, email, type, is_active, is_banned, created_at")
             .eq("id", id)
             .eq("company_id", companyId)
             .single();
 
-        if (error || !user) {
-            return { error: "User not found", key: "user_not_found" };
+        if (error) {
+            throw new Error("User not found");
         }
 
         return { user };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
@@ -32,7 +33,7 @@ export async function getUserPaginated(data: {
     page?: number;
     perPage?: number;
     sortField?: string;
-    sortOrder?: "asc" | "desc";
+    sortOrder: SortOrder;
     search?: string;
 }) {
     const companyId = await getCompanyIdFromToken()
@@ -97,7 +98,7 @@ export async function deleteUsers(data: { ids: string[] }) {
     const { ids } = data;
 
     if (!companyId || !ids?.length) {
-        return { error: "Missing company_id or ids", key: "missing_params" };
+        throw new Error("Missing company_id or ids");
     }
 
     try {
@@ -108,12 +109,12 @@ export async function deleteUsers(data: { ids: string[] }) {
             .eq("company_id", companyId);
 
         if (error) {
-            return { error: "Failed to delete users", key: "delete_failed" };
+            throw new Error("Failed to delete users");
         }
 
         return true;
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
 
@@ -126,6 +127,7 @@ export async function updateUser(data: {
 
     const { id, user_id, updates } = data;
 
+    console.log(companyId, id, user_id, updates);
     if (!id || !user_id || !updates) {
         throw new Error("Missing required fields");
     }
@@ -133,7 +135,7 @@ export async function updateUser(data: {
     try {
         const { data: user, error } = await supabase
             .from("users")
-            .update({ ...updates, updated_at: new Date(), updated_by: user_id })
+            .update({ ...updates, updated_at: formatDateToDB(new Date()), updated_by: user_id })
             .eq("id", id)
             .eq("company_id", companyId)
             .single();

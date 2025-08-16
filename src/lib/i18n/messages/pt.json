@@ -160,6 +160,21 @@
     "user_deleted": "Usuário removido com sucesso.",
     "user_updated": "Usuário atualizado com sucesso.",
     "success": "Sucesso!",
-    "error": "Erro!"
+    "error": "Erro!",
+    "license": "Licença",
+    "monthly_price": "Preço mensal",
+    "duration_months": "Duração (meses)",
+    "discount_percent": "Desconto",
+    "original_price": "Preço original",
+    "discount_price": "Valor do desconto",
+    "edit_plan": "Editar Plano",
+    "create_plan": "Criar Plano",
+    "update_plan_details": "Atualizar dados do plano",
+    "fill_create_plan": "Preencha os dados para criar um novo plano",
+    "final_price": "Valor final",
+    "total_price": "Valor total",
+    "product": "Produto",
+    "growth": "Crescimento",
+    "access": "Acesso"
   }
 }

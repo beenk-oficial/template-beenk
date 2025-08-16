@@ -33,3 +33,15 @@ export async function getCompanyIdFromToken() {
         throw error;
     }
 }
+
+export function formatDateToDB(date: Date): string {
+  const pad = (n: number, z = 2) => String(n).padStart(z, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const ms = pad(date.getMilliseconds(), 3) + "00";
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${ms}`;
+}
