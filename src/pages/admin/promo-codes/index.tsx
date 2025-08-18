@@ -1,20 +1,23 @@
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import { type IPagination, type Plan, SortOrder } from "@/types";
-import { Badge } from "@/components/ui/badge";
+import { type IPagination, SortOrder } from "@/types";
 import { useTranslation } from "react-i18next";
-import { formatToLocaleCurrency, formatToLocaleDate } from "@/utils";
-import { deletePlans, getPlansPaginated, updatePlan, createPlan } from "@/lib/supabase/api/admin/plans";
-import { IconCircleCheckFilled, IconCircleXFilled } from "@tabler/icons-react";
+import { formatToLocaleDate } from "@/utils";
+import {
+  deletePromoCodes,
+  getPromoCodesPaginated,
+  updatePromoCode,
+  createPromoCode
+} from "@/lib/supabase/api/admin/promo-codes";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDeleteDialog } from "@/components/custom/Dialog/CustomDialog";
 import Form from "./form";
 import { useSession } from "@/hooks/useSession";
-import { set } from "zod";
+import { Badge } from "@/components/ui/badge";
 
 export default function Page() {
   const { t } = useTranslation("general");
-  const [data, setData] = useState<Plan[]>([]);
+  const [data, setData] = useState<any[]>([]);
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "created_at",
@@ -31,62 +34,62 @@ export default function Page() {
   const [toDelete, setToDelete] = useState<string[] | null>(null);
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Partial<Plan> | null>(null);
+  const [editingPromoCode, setEditingPromoCode] = useState<any | null>(null);
   const { userId } = useSession();
 
   const toast = useToast();
 
   const columns = [
     {
-      label: t("name"),
-      field: "name",
+      label: t("code"),
+      field: "code",
       sortable: true,
+      component: ({ row }: { row: any }) => (
+        <Badge variant="outline" className="text-muted-foreground px-1.5">
+          {row.code}
+        </Badge>
+      ),
     },
     {
-      label: t("license"),
-      field: "license_id",
+      label: t("description"),
+      field: "description",
     },
     {
-      label: t("monthly_price"),
-      field: "monthly_price",
-      sortable: true,
-      format: formatToLocaleCurrency,
+      label: t("discount_type"),
+      field: "discount_type",
+      format: (value: string) => t(value),
     },
     {
-      label: t("duration_months"),
-      field: "duration_months",
-      sortable: true,
-    },
-    {
-      label: t("discount_percent"),
-      field: "discount_percent",
-      format: (value: number) => value != null ? `${value}%` : "-",
-    },
-    {
-      label: t("original_price"),
-      field: "original_price",
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("discount_price"),
-      field: "discount_price",
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("status"),
-      field: "is_active",
+      label: t("discount_value"),
+      field: "discount_value",
       component: ({ row }: { row: any }) => {
+        if (row.discount_type === "percentage") {
+          return <span>{Number(row.discount_value).toFixed(2)}%</span>;
+        }
         return (
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {row.is_active ? (
-              <IconCircleCheckFilled className="fill-green-400" />
-            ) : (
-              <IconCircleXFilled className="fill-red-400" />
-            )}
-            {row.is_active ? t("active") : t("inactive")}{" "}
-          </Badge>
+          <span>
+            {Number(row.discount_value).toLocaleString(undefined, {
+              style: "currency",
+              currency: "BRL",
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
         );
       },
+    },
+    {
+      label: t("usage_limit"),
+      field: "usage_limit",
+    },
+    {
+      label: t("total_usage_limit"),
+      field: "total_usage_limit",
+    },
+    {
+      label: t("expires_at"),
+      field: "expires_at",
+      format: formatToLocaleDate,
     },
     {
       label: t("created_at"),
@@ -96,10 +99,21 @@ export default function Page() {
     },
   ];
 
+  const actions = {
+    update: (updatedData: any) => {
+      setEditingPromoCode(updatedData);
+      setOpen(true);
+    },
+    delete: (row: Record<string, any>) => {
+      setDeleteDialogOpen(true);
+      setToDelete([row.id]);
+    },
+  };
+
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await getPlansPaginated({
+      const response = await getPromoCodesPaginated({
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,
@@ -107,7 +121,7 @@ export default function Page() {
         search: updatedPagination?.search ?? pagination.search,
       });
 
-      setData((response?.data ?? []) as Plan[]);
+      setData(response?.data ?? []);
       setPagination((prev) => ({
         ...prev,
         currentTotalItems: response.pagination?.currentTotalItems ?? 0,
@@ -115,7 +129,7 @@ export default function Page() {
         totalPages: response.pagination?.totalPages ?? 0,
       }));
     } catch (error) {
-      console.error("Error fetching subscriptions:", error);
+      console.error("Error fetching promo codes:", error);
     } finally {
       setLoading(false);
     }
@@ -132,7 +146,7 @@ export default function Page() {
 
   const handleRemove = () => {
     if (selected.length > 0) {
-      setToDelete(selected.map((item: Plan) => item.id));
+      setToDelete(selected.map((item: any) => item.id));
       setDeleteDialogOpen(true);
     }
   };
@@ -141,14 +155,14 @@ export default function Page() {
     try {
       setLoading(true);
       if (toDelete && toDelete.length > 0) {
-        await deletePlans({
+        await deletePromoCodes({
           ids: toDelete,
         });
 
         fetchData();
         setSelected([]);
         setToDelete(null);
-        toast({ title: t("success"), description: t("user_deleted"), type: "success" });
+        toast({ title: t("success"), description: t("promo_code_deleted"), type: "success" });
       }
     } catch (error) {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
@@ -158,18 +172,18 @@ export default function Page() {
     }
   };
 
-  const handleSubmit = async (formData: Partial<Plan>) => {
+  const handleSubmit = async (formData: any) => {
     try {
       setLoading(true);
-      if (editingPlan?.id) {
-        await updatePlan({
-          id: editingPlan.id as string,
+      if (editingPromoCode?.id) {
+        await updatePromoCode({
+          id: editingPromoCode.id as string,
           user_id: userId as string,
           updates: formData,
         });
-        toast({ title: t("success"), description: t("user_updated"), type: "success" });
+        toast({ title: t("success"), description: t("promo_code_updated"), type: "success" });
       } else {
-        await createPlan({
+        await createPromoCode({
           ...formData,
           created_at: new Date(),
           created_by: userId as string,
@@ -181,9 +195,14 @@ export default function Page() {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
       setOpen(false);
-      setEditingPlan(null);
+      setEditingPromoCode(null);
       setLoading(false);
     }
+  };
+
+  const handleAddItem = () => {
+    setEditingPromoCode(null); 
+    setOpen(true);
   };
 
   return (
@@ -193,14 +212,15 @@ export default function Page() {
         columns={columns}
         pagination={pagination}
         loading={loading}
+        actions={actions}
         onRequest={handleRequest}
-        onAddItem={() => setOpen(true)}
+        onAddItem={handleAddItem}
         onRemoveItens={handleRemove}
       />
 
       <Form
         open={open}
-        data={editingPlan}
+        data={editingPromoCode}
         onOpenChange={setOpen}
         onSubmit={handleSubmit}
       />

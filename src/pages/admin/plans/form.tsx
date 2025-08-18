@@ -6,22 +6,22 @@ import { useTranslation } from "react-i18next";
 import CustomCheckbox from "@/components/custom/Input/CustomCheckbox";
 import CustomSelect from "@/components/custom/Input/CustomSelect";
 import { Card, CardContent } from "@/components/ui/card";
+import { getLicenses } from "@/lib/supabase/api/admin/licenses";
 
 export default function Form({
   data,
   open,
   onOpenChange,
   onSubmit,
-  licenseOptions = [],
 }: {
   data?: any;
   open: boolean;
   onOpenChange?: (open: boolean) => void;
   onSubmit?: (formData: any) => void;
-  licenseOptions?: { value: string; label: string }[];
 }) {
   const { t } = useTranslation("general");
   const [loading, setLoading] = useState(false);
+  const [licenseOptions, setLicenseOptions] = useState<{ value: string; label: string }[]>([]);
 
   const [formData, setFormData] = useState<any>({
     name: "",
@@ -56,6 +56,15 @@ export default function Form({
         is_active: true,
       });
     }
+
+    getLicenses().then((licenses) => {
+      setLicenseOptions(licenses?.map((license) => ({
+        value: license.id,
+        label: license.name
+      })) ?? []
+      );
+    });
+
   }, [open]);
 
   const handleChange = (field: string, value: any) => {
@@ -64,7 +73,8 @@ export default function Form({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) onSubmit({...formData,
+    if (onSubmit) onSubmit({
+      ...formData,
       original_price: formData.monthly_price * formData.duration_months,
       discount_price: formData.monthly_price * formData.duration_months * (formData.discount_percent || 0) / 100
     });

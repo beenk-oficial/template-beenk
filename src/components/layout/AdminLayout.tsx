@@ -33,7 +33,7 @@ enum AdminRoutes {
   License = "/admin/licenses",
   Payments = "/admin/payments",
   Invoices = "/admin/invoices",
-  PromoCodes = "/admin/promo_codes",
+  PromoCodes = "/admin/promo-codes",
   Referrals = "/admin/referrals",
   Roles = "/admin/roles",
   SettingsCompany = "/admin/settings/company",

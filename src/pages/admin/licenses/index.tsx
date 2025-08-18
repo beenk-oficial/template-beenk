@@ -1,11 +1,9 @@
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import { type IPagination, type Plan, SortOrder } from "@/types";
-import { Badge } from "@/components/ui/badge";
+import { type IPagination, type License, SortOrder } from "@/types";
 import { useTranslation } from "react-i18next";
-import { formatToLocaleCurrency, formatToLocaleDate } from "@/utils";
-import { deletePlans, getPlansPaginated, updatePlan, createPlan } from "@/lib/supabase/api/admin/plans";
-import { IconCircleCheckFilled, IconCircleXFilled } from "@tabler/icons-react";
+import { formatToLocaleDate } from "@/utils";
+import { createLicense, updateLicense, deleteLicense, getLicensesPaginated } from "@/lib/supabase/api/admin/licenses";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDeleteDialog } from "@/components/custom/Dialog/CustomDialog";
 import Form from "./form";
@@ -13,7 +11,7 @@ import { useSession } from "@/hooks/useSession";
 
 export default function Page() {
   const { t } = useTranslation("general");
-  const [data, setData] = useState<Plan[]>([]);
+  const [data, setData] = useState<License[]>([]);
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "created_at",
@@ -30,7 +28,7 @@ export default function Page() {
   const [toDelete, setToDelete] = useState<string[] | null>(null);
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Partial<Plan> | null>(null);
+  const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const { userId } = useSession();
 
   const toast = useToast();
@@ -42,58 +40,10 @@ export default function Page() {
       sortable: true,
     },
     {
-      label: t("license"),
-      field: "license_id",
-      component: ({ row }: { row: any }) => {
-        console.log("row", row);
-        return (
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {row.license ? row.license.name : "-"}
-          </Badge>
-        );
-      },
-    },
-    {
-      label: t("monthly_price"),
-      field: "monthly_price",
-      sortable: true,
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("duration_months"),
-      field: "duration_months",
-      sortable: true,
-    },
-    {
-      label: t("discount_percent"),
-      field: "discount_percent",
-      format: (value: number) => value != null ? `${value}%` : "-",
-    },
-    {
-      label: t("original_price"),
-      field: "original_price",
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("discount_price"),
-      field: "discount_price",
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("status"),
-      field: "is_active",
-      component: ({ row }: { row: any }) => {
-        return (
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {row.is_active ? (
-              <IconCircleCheckFilled className="fill-green-400" />
-            ) : (
-              <IconCircleXFilled className="fill-red-400" />
-            )}
-            {row.is_active ? t("active") : t("inactive")}{" "}
-          </Badge>
-        );
-      },
+      label: t("description"),
+      field: "description",
+      format: (value: string) =>
+        value && value.length > 100 ? value.slice(0, 100) + "..." : value,
     },
     {
       label: t("created_at"),
@@ -105,7 +55,7 @@ export default function Page() {
 
   const actions = {
     update: (updatedData: any) => {
-      setEditingPlan(updatedData);
+      setEditingLicense(updatedData);
       setOpen(true);
     },
     delete: (row: Record<string, any>) => {
@@ -117,7 +67,7 @@ export default function Page() {
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await getPlansPaginated({
+      const response = await getLicensesPaginated({
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,
@@ -125,7 +75,7 @@ export default function Page() {
         search: updatedPagination?.search ?? pagination.search,
       });
 
-      setData((response?.data ?? []) as Plan[]);
+      setData((response?.data ?? []) as License[]);
       setPagination((prev) => ({
         ...prev,
         currentTotalItems: response.pagination?.currentTotalItems ?? 0,
@@ -133,7 +83,7 @@ export default function Page() {
         totalPages: response.pagination?.totalPages ?? 0,
       }));
     } catch (error) {
-      console.error("Error fetching subscriptions:", error);
+      console.error("Error fetching licenses:", error);
     } finally {
       setLoading(false);
     }
@@ -145,12 +95,12 @@ export default function Page() {
 
   const handleRequest = (updatedPagination: IPagination) => {
     setPagination(updatedPagination);
-    fetchData(updatedPagination);
+    fetchData();
   };
 
   const handleRemove = () => {
     if (selected.length > 0) {
-      setToDelete(selected.map((item: Plan) => item.id));
+      setToDelete(selected.map((item: License) => item.id));
       setDeleteDialogOpen(true);
     }
   };
@@ -159,14 +109,11 @@ export default function Page() {
     try {
       setLoading(true);
       if (toDelete && toDelete.length > 0) {
-        await deletePlans({
-          ids: toDelete,
-        });
-
+        await deleteLicense({ ids: toDelete });
         fetchData();
         setSelected([]);
         setToDelete(null);
-        toast({ title: t("success"), description: t("user_deleted"), type: "success" });
+        toast({ title: t("success"), description: t("license_deleted"), type: "success" });
       }
     } catch (error) {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
@@ -176,18 +123,18 @@ export default function Page() {
     }
   };
 
-  const handleSubmit = async (formData: Partial<Plan>) => {
+  const handleSubmit = async (formData: License) => {
     try {
       setLoading(true);
-      if (editingPlan?.id) {
-        await updatePlan({
-          id: editingPlan.id as string,
+      if (editingLicense?.id) {
+        await updateLicense({
+          id: editingLicense.id as string,
           user_id: userId as string,
           updates: formData,
         });
-        toast({ title: t("success"), description: t("user_updated"), type: "success" });
+        toast({ title: t("success"), description: t("license_updated"), type: "success" });
       } else {
-        await createPlan({
+        await createLicense({
           ...formData,
           created_at: new Date(),
           created_by: userId as string,
@@ -199,13 +146,13 @@ export default function Page() {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
       setOpen(false);
-      setEditingPlan(null);
+      setEditingLicense(null);
       setLoading(false);
     }
   };
 
   const handleAddItem = () => {
-    setEditingPlan(null);
+    setEditingLicense(null);
     setOpen(true);
   };
 
@@ -216,7 +163,9 @@ export default function Page() {
         columns={columns}
         pagination={pagination}
         loading={loading}
+        selected={selected}
         actions={actions}
+        onRowSelectionChange={setSelected}
         onRequest={handleRequest}
         onAddItem={handleAddItem}
         onRemoveItens={handleRemove}
@@ -224,7 +173,7 @@ export default function Page() {
 
       <Form
         open={open}
-        data={editingPlan}
+        data={editingLicense}
         onOpenChange={setOpen}
         onSubmit={handleSubmit}
       />
