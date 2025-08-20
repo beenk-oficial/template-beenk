@@ -1,5 +1,5 @@
-import * as React from "react"
 import { ChevronDownIcon } from "lucide-react"
+import dayjs from "dayjs"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -10,18 +10,22 @@ import {
 } from "@/components/ui/popover"
 import CustomInputGroup from "./CustomInputGroup"
 import { useTranslation } from "react-i18next"
+import { useState } from "react"
 
 interface CustomDatePickerProps {
   id?: string;
   name?: string;
   placeholder?: string;
-  value?: Date;
+  value?: string;
   label?: string;
   htmlFor?: string;
   required?: boolean;
   error?: string;
   disabled?: boolean;
-  onChange: (value: Date) => void;
+  withTime?: boolean;
+  children?: React.ReactNode;
+  onChange: (value: string) => void;
+
 }
 
 export default function CustomDatePicker({
@@ -34,9 +38,11 @@ export default function CustomDatePicker({
   required,
   error,
   disabled,
+  withTime = false,
+  children,
   onChange,
 }: CustomDatePickerProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const { t } = useTranslation("general");
 
   return (
@@ -53,9 +59,12 @@ export default function CustomDatePicker({
             id="date-picker"
             className="justify-between font-normal"
             disabled={disabled}
-
           >
-            {value ? (new Date(value)).toLocaleDateString() : (placeholder ?? t("select_date"))}
+            {value
+              ? withTime
+                ? dayjs(value).format("DD/MM/YYYY HH:mm")
+                : dayjs(value).format("DD/MM/YYYY")
+              : (placeholder ?? t("select_date"))}
             <ChevronDownIcon />
           </Button>
         </PopoverTrigger>
@@ -63,17 +72,16 @@ export default function CustomDatePicker({
           <Calendar
             id={id ?? name}
             mode="single"
-            selected={value}
+            selected={dayjs(value).isValid() ? dayjs(value).toDate() : undefined}
             captionLayout="dropdown"
             disabled={disabled}
             onSelect={(date) => {
-              onChange(date as Date)
-              setOpen(false)
+              onChange(dayjs(date).toISOString())
             }}
           />
+          <div>{children}</div>
         </PopoverContent>
       </Popover>
     </CustomInputGroup>
-
   )
 }

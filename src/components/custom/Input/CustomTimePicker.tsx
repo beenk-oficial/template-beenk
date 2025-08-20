@@ -42,8 +42,8 @@ export default function CustomTimePicker({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         type="time"
-        step="1"
-        defaultValue="00:00:00"
+        step="60"
+        defaultValue="00:00"
         className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
       />
     </CustomInputGroup>

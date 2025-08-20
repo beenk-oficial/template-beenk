@@ -237,11 +237,11 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+    plan_id UUID REFERENCES plans(id) ON DELETE CASCADE,
     owner_type subscription_owner_type NOT NULL,
 
     stripe_subscription_id TEXT NOT NULL,
     stripe_customer_id TEXT,
-    plan_id UUID NOT NULL, 
     status subscription_status NOT NULL,
     current_period_start TIMESTAMP,
     current_period_end TIMESTAMP,

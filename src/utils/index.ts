@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export const normalizeSlug = (slug: string): string => {
   return slug
     .toLowerCase()
@@ -27,12 +29,14 @@ export function setCookie(key: string, value: string, maxAge: number) {
 
 export function formatToLocaleDate(value: string) {
   if (!value) return "-";
-  const date = new Date(value);
-  return date.toLocaleDateString(navigator.language, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const date = dayjs(value);
+  return date.isValid() ? date.local().format("DD/MM/YYYY") : "-";
+}
+
+export function formatToLocaleDateWithTime(value: string) {
+  if (!value) return "-";
+  const date = dayjs(value);
+  return date.isValid() ? date.local().format("DD/MM/YYYY HH:mm") : "-";
 }
 
 export function formatToLocaleCurrency(value: number) {
