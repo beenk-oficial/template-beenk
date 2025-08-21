@@ -3,12 +3,15 @@ import { SiteHeader } from "@/components/custom/SiteHeader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   CreditCard,
+  CreditCardIcon,
   FileText,
   LayoutDashboard,
   Package,
+  RocketIcon,
   Settings,
   Share,
   Shield,
+  ShieldIcon,
   Tag,
   Users,
 } from "lucide-react";
@@ -21,16 +24,16 @@ import { type User, UserType } from "@/types";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { logout, refreshToken } from "@/lib/supabase/api/auth";
 import { Spinner } from "../custom/Spinner";
-import { getCompanyIdFromToken } from "@/utils/api";
 
 enum AdminRoutes {
   Dashboard = "/admin/dashboard",
   Users = "/admin/users",
   Plans = "/admin/plans",
   Subscriptions = "/admin/subscriptions",
+  License = "/admin/licenses",
   Payments = "/admin/payments",
   Invoices = "/admin/invoices",
-  PromoCodes = "/admin/promo_codes",
+  PromoCodes = "/admin/promo-codes",
   Referrals = "/admin/referrals",
   Roles = "/admin/roles",
   SettingsCompany = "/admin/settings/company",
@@ -50,10 +53,6 @@ export default function AdminLayout() {
 
   useEffect(() => {
     setLoading(true);
-    const company_id = getCompanyIdFromToken();
-
-    console.log("Company ID from token:", company_id);
-
     const checkUser = async () => {
       try {
         if (!user?.email) {
@@ -117,47 +116,78 @@ export default function AdminLayout() {
         isActive: location.pathname === AdminRoutes.Users,
       },
       {
-        title: t("plans"),
-        url: AdminRoutes.Plans,
-        icon: Tag,
-        isActive: location.pathname === AdminRoutes.Plans,
-      },
-      {
-        title: t("subscriptions"),
-        url: AdminRoutes.Subscriptions,
+        title: t("product"),
         icon: Package,
-        isActive: location.pathname === AdminRoutes.Subscriptions,
+        items: [
+          {
+            title: t("plans"),
+            url: AdminRoutes.Plans,
+            isActive: location.pathname === AdminRoutes.Plans,
+          },
+          {
+            title: t("promo_codes"),
+            url: AdminRoutes.PromoCodes,
+            icon: Tag,
+            isActive: location.pathname === AdminRoutes.PromoCodes,
+          },
+        ],
       },
       {
-        title: t("payments"),
-        url: AdminRoutes.Payments,
-        icon: CreditCard,
-        isActive: location.pathname === AdminRoutes.Payments,
+        title: t("billing"),
+        icon: CreditCardIcon,
+        items: [
+          {
+            title: t("subscriptions"),
+            url: AdminRoutes.Subscriptions,
+            isActive: location.pathname === AdminRoutes.Subscriptions,
+          },
+          {
+            title: t("invoices"),
+            url: AdminRoutes.Invoices,
+            icon: FileText,
+            isActive: location.pathname === AdminRoutes.Invoices,
+          },
+          {
+            title: t("payments"),
+            url: AdminRoutes.Payments,
+            icon: CreditCard,
+            isActive: location.pathname === AdminRoutes.Payments,
+          },
+
+        ],
       },
       {
-        title: t("invoices"),
-        url: AdminRoutes.Invoices,
-        icon: FileText,
-        isActive: location.pathname === AdminRoutes.Invoices,
+        title: t("access"),
+        icon: ShieldIcon,
+        items: [
+          {
+            title: t("license"),
+            url: AdminRoutes.License,
+            isActive: location.pathname === AdminRoutes.License,
+          },
+          {
+            title: t("access_control"),
+            url: AdminRoutes.Roles,
+            icon: Shield,
+            isActive: location.pathname === AdminRoutes.Roles,
+          },
+        ]
       },
       {
-        title: t("promo_codes"),
-        url: AdminRoutes.PromoCodes,
-        icon: Tag,
-        isActive: location.pathname === AdminRoutes.PromoCodes,
+        title: t("growth"),
+        icon: RocketIcon,
+        items: [
+          {
+            title: t("referrals"),
+            url: AdminRoutes.Referrals,
+            icon: Share,
+            isActive: location.pathname === AdminRoutes.Referrals,
+          },
+        ]
       },
-      {
-        title: t("referrals"),
-        url: AdminRoutes.Referrals,
-        icon: Share,
-        isActive: location.pathname === AdminRoutes.Referrals,
-      },
-      {
-        title: t("access_control"),
-        url: AdminRoutes.Roles,
-        icon: Shield,
-        isActive: location.pathname === AdminRoutes.Roles,
-      },
+
+
+
       {
         title: t("settings"),
         icon: Settings,
@@ -180,9 +210,18 @@ export default function AdminLayout() {
     ],
   };
 
-  const activeItem =
-    sidebarData.navMain.find((item) => item.isActive)?.title ||
-    t("dashboard");
+  function findActiveTitle(items: any[]): string | undefined {
+    for (const item of items) {
+      if (item.isActive) return item.title;
+      if (item.items) {
+        const found = findActiveTitle(item.items);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }
+
+  const activeItem = findActiveTitle(sidebarData.navMain) || t("dashboard");
 
   if (loading) {
     return (

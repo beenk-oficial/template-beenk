@@ -2,36 +2,18 @@ import { supabase } from "@/lib/supabase";
 import type { SortOrder } from "@/types";
 import { getCompanyIdFromToken } from "@/utils/api";
 
-export async function getPlanById(data: { id: string }) {
-    const { id } = data;
-    const companyId = await getCompanyIdFromToken();
+const TABLE = 'licenses';
 
-    if (!id) {
-        throw new Error("Missing plan id");
-    }
+export async function getLicenses() {
+    const { data } = await supabase
+        .from(TABLE)
+        .select('id, name, description')
+        .order('name', { ascending: true });
 
-    if (!companyId) {
-        throw new Error("Missing company_id");
-    }
-
-    try {
-        const { data: plan, error } = await supabase
-            .from("plans")
-            .select("*")
-            .eq("id", id)
-            .eq("company_id", companyId)
-            .single();
-
-        if (error || !plan) {
-            throw new Error("Plan not found");
-        }
-        return { plan };
-    } catch (error) {
-        throw error;
-    }
+    return data;
 }
 
-export async function getPlansPaginated(data: {
+export async function getLicensesPaginated(data: {
     page?: number;
     perPage?: number;
     sortField?: string;
@@ -47,14 +29,13 @@ export async function getPlansPaginated(data: {
     } = data;
 
     const companyId = await getCompanyIdFromToken();
-    if (!companyId) {
-        throw new Error("Missing company_id");
-    }
+    if (!companyId) throw new Error("Missing company_id");
+
 
     try {
         let query = supabase
-            .from("plans")
-            .select("*, license:licenses(id, name)", { count: "exact" })
+            .from(TABLE)
+            .select("*", { count: "exact" })
             .eq("company_id", companyId);
 
         if (search) {
@@ -90,81 +71,92 @@ export async function getPlansPaginated(data: {
     }
 }
 
-export async function createPlan(data: Record<string, any>) {
-    if (!data) {
-        throw new Error("Missing plan data");
-    }
-
+export async function getLicenseById(data: { id: string }) {
+    const { id } = data;
     const companyId = await getCompanyIdFromToken();
-    if (!companyId) {
-        throw new Error("Missing company_id");
-    }
+
+    if (!id) throw new Error("Missing license id");
+
+    if (!companyId) throw new Error("Missing company_id");
+
     try {
-        const { data: plan, error } = await supabase
-            .from("plans")
-            .insert([{ ...data, company_id: companyId}])
-            .select()
+        const { data: license } = await supabase
+            .from(TABLE)
+            .select("*")
+            .eq("id", id)
+            .eq("company_id", companyId)
             .single();
-        if (error) {
-            throw new Error("Failed to create plan");
-        }
-        return { plan };
+
+        return { license };
     } catch (error) {
         throw error;
     }
 }
 
-export async function updatePlan(data: { id: string; user_id: string; updates: Record<string, any> }) {
+export async function createLicense(data: Record<string, any>) {
+    if (!data) throw new Error("Missing license data");
+
+    const companyId = await getCompanyIdFromToken();
+    if (!companyId) throw new Error("Missing company_id");
+
+    try {
+        const { data: license, error } = await supabase
+            .from(TABLE)
+            .insert([{ ...data, company_id: companyId }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return license;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateLicense(data: { id: string; user_id: string; updates: Record<string, any> }) {
     const { id, user_id, updates } = data;
     const companyId = await getCompanyIdFromToken();
 
-    if (!id || !updates) {
-        throw new Error("Missing required fields");
-    }
+    if (!id || !updates) throw new Error("Missing required fields");
 
-    if (!companyId) {
-        throw new Error("Missing company_id");
-    }
+    if (!companyId) throw new Error("Missing company_id");
 
     try {
-        const { data: plan, error } = await supabase
-            .from("plans")
+        const { data: license, error } = await supabase
+            .from(TABLE)
             .update({ ...updates, updated_at: new Date(), updated_by: user_id })
             .eq("id", id)
             .eq("company_id", companyId)
             .select()
             .single();
+
         if (error) {
-            throw new Error("Failed to update plan");
+            throw new Error("Failed to update license");
         }
-        return { plan };
+
+        return license;
     } catch (error) {
         throw error;
     }
 }
 
-export async function deletePlans(data: { ids: string[] }) {
+export async function deleteLicense(data: { ids: string[] }) {
     const { ids } = data;
     const companyId = await getCompanyIdFromToken();
 
-    if (!ids?.length) {
-        throw new Error("Missing ids");
-    }
+    if (!ids?.length) throw new Error("Missing ids");
 
-    if (!companyId) {
-        throw new Error("Missing company_id");
-    }
+    if (!companyId) throw new Error("Missing company_id");
 
     try {
         const { error } = await supabase
-            .from("plans")
+            .from(TABLE)
             .delete()
             .in("id", ids)
             .eq("company_id", companyId);
 
-        if (error) {
-            throw new Error("Failed to delete plans")
-        }
+        if (error) throw new Error("Failed to delete licenses");
+
         return true;
     } catch (error) {
         throw error;

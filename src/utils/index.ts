@@ -25,7 +25,6 @@ export function setCookie(key: string, value: string, maxAge: number) {
   document.cookie = `${key}=${value}; Path=/; Max-Age=${maxAge}; `;
 }
 
-
 export function formatToLocaleDate(value: string) {
   if (!value) return "-";
   const date = new Date(value);
@@ -33,5 +32,15 @@ export function formatToLocaleDate(value: string) {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+  });
+}
+
+export function formatToLocaleCurrency(value: number) {
+  if (value == null) return "-";
+  return value.toLocaleString(navigator.language, {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 }

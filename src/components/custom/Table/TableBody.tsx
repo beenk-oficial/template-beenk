@@ -36,7 +36,7 @@ const renderSkeletonRow = (
   }
 ) => {
   return (
-    <TableRow>
+    <TableRow key={`skeleton-row-${Math.random()}`}>
       {selected && (
         <TableCell>
           <Skeleton className="h-4 w-4 rounded-md ml-1" />
@@ -178,7 +178,7 @@ export default function CustomTableBody({
     const colSpan = columns.length + (selected ? 1 : 0) + (actions ? 1 : 0);
 
     return (
-      <TableRow>
+      <TableRow key="no-results">
         <TableCell colSpan={colSpan} className="h-24 text-center">
           {t("no_results")}
         </TableCell>

@@ -323,6 +323,8 @@ CREATE TABLE IF NOT EXISTS referrals (
 CREATE TABLE IF NOT EXISTS licenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
+    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE, 
+
     name TEXT NOT NULL,
     description TEXT,
     features JSONB, 
@@ -342,7 +344,7 @@ CREATE TABLE IF NOT EXISTS plans (
     company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
 
     name TEXT NOT NULL,
-    stripe_price_id TEXT UNIQUE NOT NULL,
+    stripe_price_id TEXT UNIQUE,
 
     monthly_price NUMERIC NOT NULL,
     duration_months INTEGER NOT NULL, 

@@ -4,11 +4,13 @@ import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { changePassword, validatePasswordResetToken } from "@/lib/supabase/api/auth";
 import CustomInput from "@/components/custom/Input/CustomInput";
+import { normalizeLink } from "@/utils";
 
 export default function ResetPassword() {
   const { t } = useTranslation("change_password");
   const { token } = useParams();
   const navigate = useNavigate();
+  const params = useParams();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,7 +23,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!tokenValid) {
-      navigate("/error/403");
+      navigate(normalizeLink("/error/403", params));
     }
   }, [tokenValid, token]);
 
@@ -34,11 +36,11 @@ export default function ResetPassword() {
       !(response as { error?: string })?.error ? (
         setTokenValid(true)
       ) : (
-        navigate("/error/403")
+        navigate(normalizeLink("/error/403", params))
       );
 
     } catch (error) {
-      navigate("/error/403");
+      navigate(normalizeLink("/error/403", params));
     }
   };
 
@@ -63,7 +65,7 @@ export default function ResetPassword() {
         return;
       }
 
-      navigate("/signin");
+      navigate("/auth/signin");
     } catch (error) {
       console.error("Unexpected error during password reset:", error);
     } finally {

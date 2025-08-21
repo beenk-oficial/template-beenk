@@ -1,3 +1,4 @@
+import { ToastProvider } from "@/components/ui/toast";
 import { useWhitelabel } from "@/hooks/useWhitelabel";
 import { useEffect, useState, type ReactNode } from "react";
 import { Spinner } from "@/components/custom/Spinner";
@@ -36,8 +37,8 @@ export default function App({ children }: AppProps) {
   }
 
   return (
-    <>
+    <ToastProvider>
       {children}
-    </>
+    </ToastProvider>
   );
 }

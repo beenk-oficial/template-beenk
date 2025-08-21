@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   BookOpen,
   Bot,
+  LayoutDashboard,
   Settings2,
   SquareTerminal,
 } from "lucide-react";
@@ -17,6 +18,11 @@ import { useEffect, useState } from "react";
 import { useWhitelabel } from "@/hooks/useWhitelabel";
 import { UserType, type User } from "@/types";
 import { Spinner } from "../custom/Spinner";
+
+enum AppRoutes {
+  Dashboard = "/app/dashboard",
+
+}
 
 export default function AppLayout() {
   const { whitelabel } = useWhitelabel();
@@ -80,6 +86,12 @@ export default function AppLayout() {
       },
     ],
     navMain: [
+      {
+        title: t("dashboard"),
+        url: AppRoutes.Dashboard,
+        icon: LayoutDashboard,
+        isActive: location.pathname === AppRoutes.Dashboard,
+      },
       {
         title: "Playground",
         url: "#",

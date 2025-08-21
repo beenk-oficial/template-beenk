@@ -45,16 +45,12 @@ export async function getSubscriptionPaginated(data: {
         const to = from + perPage - 1;
         query = query.range(from, to);
 
-        const { data: subscriptions, count, error } = await query;
-
-        if (error) {
-            return { error: "Failed to fetch", key: "fetch_failed" };
-        }
+        const { data: subscriptions, count } = await query;
 
         const totalPages = Math.ceil((count || 0) / perPage);
 
         return {
-            data: subscriptions.map(subscription => ({
+            data: subscriptions?.map(subscription => ({
                 ...subscription,
                 email: (subscription.users as any)?.email,
             })),
@@ -70,6 +66,6 @@ export async function getSubscriptionPaginated(data: {
             },
         };
     } catch (error) {
-        return { error: "Internal server error", key: "internal_error" };
+        throw error;
     }
 }
