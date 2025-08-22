@@ -9,11 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import { useNotificationStore } from "@/stores/notification";
+import { useTranslation } from "react-i18next";
 
 export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; userId: string }) {
     const { notifications, loading, error, fetchNotifications, markAsRead } = useNotificationStore();
+    const { t } = useTranslation("general");
 
   useEffect(() => {
     if (userId) fetchNotifications(userId);
@@ -34,11 +35,11 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
         <div className="ml-auto flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="sm" className="relative rounded-md border">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {unreadCount}
+                  <span className={`absolute -top-1 -right-1 bg-red-500 text-white font-light rounded-full flex items-center justify-center w-4 h-4 ${unreadCount >= 10 ? "text-[10px]" : "text-[8px]"}`}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </Button>
@@ -46,7 +47,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
 
             <DropdownMenuContent align="end" className="w-80">
               {loading && (
-                <div className="p-4 text-center text-muted-foreground text-sm">Carregando...</div>
+                <div className="p-4 text-center text-muted-foreground text-sm">{t("loading")}</div>
               )}
 
               {error && (
@@ -55,7 +56,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
 
               {!loading && notifications.length === 0 && (
                 <div className="p-4 text-muted-foreground text-sm text-center">
-                  Nenhuma notificação
+                  {t("no_notifications")}
                 </div>
               )}
 
@@ -64,7 +65,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                   onClick={markAllAsRead}
                   className="text-muted-foreground cursor-pointer font-medium"
                 >
-                  Marcar todas como lidas
+                  {t("mark_all_as_read")}
                 </DropdownMenuItem>
               )}
 
@@ -78,7 +79,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                     <span className="font-medium flex-1">{notif.title}</span>
                     {!notif.read_at && (
                       <span className="text-xs bg-sidebar text-popover-foreground px-2 py-0.5 rounded-full">
-                        Novo
+                        {t("new")}
                       </span>
                     )}
                   </div>

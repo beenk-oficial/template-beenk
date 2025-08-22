@@ -197,6 +197,9 @@
     "percentage": "Percentage",
     "fixed": "Fixed",
     "code": "Code",
-    "select_date": "Select date"
+    "select_date": "Select date",
+    "no_notifications": "No notifications",
+    "mark_all_as_read": "Mark all as read",
+    "new": "New"
   }
 }
