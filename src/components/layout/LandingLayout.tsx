@@ -104,7 +104,7 @@ export function LandingLayout() {
 	return (
 		<div className="flex min-h-[100dvh] flex-col">
 			<header
-				className={`sticky top-0 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
+				className={`border-b border-b-sidebar-border sticky top-0 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
 					isScrolled ? "bg-background/80 shadow-sm" : "bg-transparent"
 				}`}
 			>
@@ -118,7 +118,7 @@ export function LandingLayout() {
 						<img
 							src={logo}
 							alt={`${brandName} logo`}
-							className="h-6 object-contain "
+							className="h-7 object-contain "
 						/>
 					</Link>
 					<nav className="hidden md:flex gap-8">
