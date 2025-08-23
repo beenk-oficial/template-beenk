@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import Landing from "@/pages/landing/index";
 import AuthLayout from "@/components/layout/AuthLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
 import SignIn from "@/pages/auth/SignIn";
@@ -13,16 +12,24 @@ import AdminUsers from "@/pages/admin/users";
 import AdminPlans from "@/pages/admin/plans";
 import AdminLicenses from "@/pages/admin/licenses";
 import AdminPromoCodes from "@/pages/admin/promo-codes";
+import AdminInvoices from "@/pages/admin/invoices";
 
 import AppLayout from "@/components/layout/AppLayout";
 import AppDashboard from "@/pages/app/dashboard";
+import { LandingLayout } from "@/components/layout/LandingLayout";
 
+
+import LandingHome from "@/pages/landing/index";
 
 
 const routes = createBrowserRouter([
   {
-    index: true,
-    Component: Landing,
+    path: "/",
+    Component: LandingLayout,
+    children: [{
+      index: true,
+      Component: LandingHome,
+    }]
   },
   {
     path: "auth",
@@ -44,9 +51,10 @@ const routes = createBrowserRouter([
       { path: "plans", Component: AdminPlans },
       { path: "licenses", Component: AdminLicenses },
       { path: "promo-codes", Component: AdminPromoCodes },
+      { path: "invoices", Component: AdminInvoices },
     ],
   },
-    {
+  {
     path: "app",
     Component: AppLayout,
     children: [

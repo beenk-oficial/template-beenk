@@ -91,8 +91,17 @@ export default function Page() {
 
   const columns = [
     {
-      label: t("email"),
+      label: t("user"),
       field: "email",
+      component: ({ row }: { row: any }) =>
+        row.users ? (
+          <div>
+            <div className="font-medium">{row.users.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.users.email}</div>
+          </div>
+        ) : (
+          "-"
+        ),
     },
     {
       label: t("status"),

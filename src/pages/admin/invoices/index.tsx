@@ -1,26 +1,23 @@
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import { type IPagination, SortOrder, type Subscription, SubscriptionStatus } from "@/types";
-
+import { type IPagination, SortOrder } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import {
   IconCircleCheckFilled,
-  IconCircleXFilled,
   IconAlertTriangleFilled,
-  IconClockFilled,
   IconBan,
   IconExclamationCircle,
   IconCircleDashed,
+  IconFileText,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { formatToLocaleDate } from "@/utils";
-import { useSession } from "@/hooks/useSession";
-import { getSubscriptionPaginated } from "@/lib/supabase/api/admin/subscription";
+import { formatToLocaleCurrency, formatToLocaleDate } from "@/utils";
+import { getInvoicesPaginated } from "@/lib/supabase/api/admin/invoices";
+import { useToast } from "@/components/ui/toast";
 
 export default function Page() {
   const { t } = useTranslation("general");
-  const { companyId } = useSession();
-  const [data, setData] = useState<Subscription[]>([]);
+  const [data, setData] = useState<any[]>([]);
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "created_at",
@@ -34,46 +31,38 @@ export default function Page() {
   });
   const [loading, setLoading] = useState(false);
 
+  const toast = useToast();
+
   function renderStatus(row: any, t: any) {
     if (row.status) {
       let colorClass = "";
       let label = row.status;
       let Icon = null;
       switch (row.status) {
-        case SubscriptionStatus.INCOMPLETE:
-          colorClass = "bg-yellow-200 text-yellow-800";
-          label = t("incomplete");
+        case "draft":
+          colorClass = "bg-gray-200 text-gray-800";
+          label = t("draft");
           Icon = IconCircleDashed;
           break;
-        case SubscriptionStatus.INCOMPLETE_EXPIRED:
-          colorClass = "bg-gray-200 text-gray-800";
-          label = t("incomplete_expired");
-          Icon = IconClockFilled;
-          break;
-        case SubscriptionStatus.TRIALING:
+        case "open":
           colorClass = "bg-blue-200 text-blue-800";
-          label = t("trialing");
+          label = t("open");
           Icon = IconAlertTriangleFilled;
           break;
-        case SubscriptionStatus.ACTIVE:
+        case "paid":
           colorClass = "bg-green-200 text-green-800";
-          label = t("active");
+          label = t("paid");
           Icon = IconCircleCheckFilled;
           break;
-        case SubscriptionStatus.PAST_DUE:
+        case "uncollectible":
           colorClass = "bg-orange-200 text-orange-800";
-          label = t("past_due");
+          label = t("uncollectible");
           Icon = IconExclamationCircle;
           break;
-        case SubscriptionStatus.CANCELED:
+        case "void":
           colorClass = "bg-red-200 text-red-800";
-          label = t("canceled");
+          label = t("void");
           Icon = IconBan;
-          break;
-        case SubscriptionStatus.UNPAID:
-          colorClass = "bg-pink-200 text-pink-800";
-          label = t("unpaid");
-          Icon = IconCircleXFilled;
           break;
         default:
           colorClass = "bg-muted text-muted-foreground";
@@ -91,8 +80,22 @@ export default function Page() {
 
   const columns = [
     {
-      label: t("email"),
-      field: "email",
+      label: t("user"),
+      field: "users",
+      component: ({ row }: { row: any }) =>
+        row.users ? (
+          <div>
+            <div className="font-medium">{row.users.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.users.email}</div>
+          </div>
+        ) : (
+          "-"
+        ),
+    },
+    {
+      label: t("amount"),
+      field: "amount",
+      format: formatToLocaleCurrency,
     },
     {
       label: t("status"),
@@ -100,41 +103,36 @@ export default function Page() {
       component: ({ row }: { row: any }) => renderStatus(row, t),
     },
     {
-      label: t("plan"),
-      field: "plan_id",
-      component: ({ row }: { row: any }) => (
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.plan?.name}
-        </Badge>
-      ),
-    },
-    {
-      label: t("trial_start"),
-      field: "trial_start",
-      sortable: true,
+      label: t("due_date"),
+      field: "due_date",
       format: formatToLocaleDate,
     },
     {
-      label: t("trial_end"),
-      field: "trial_end",
+      label: t("paid_at"),
+      field: "paid_at",
       format: formatToLocaleDate,
     },
+
     {
-      label: t("current_period_start"),
-      field: "current_period_start",
-      sortable: true,
-      format: formatToLocaleDate,
-    },
-    {
-      label: t("current_period_end"),
-      field: "current_period_end",
-      format: formatToLocaleDate,
-    },
-    {
-      label: t("canceled_at"),
-      field: "canceled_at",
-      sortable: true,
-      format: formatToLocaleDate,
+      label: t("invoice"),
+      field: "invoice_pdf_url",
+      component: ({ row }: { row: any }) =>
+        row.invoice_pdf_url ? (
+          <a
+            href={row.invoice_pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 hover:underline"
+            title={t("open") + " PDF"}
+          >
+            <IconFileText size={18} />
+            <span className="hidden md:inline">
+              {row.id?.slice(-5)}
+            </span>
+          </a>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        ),
     },
     {
       label: t("created_at"),
@@ -147,25 +145,22 @@ export default function Page() {
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await getSubscriptionPaginated({
-        company_id: companyId || "",
+      const response = await getInvoicesPaginated({
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,
         sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
         search: updatedPagination?.search ?? pagination.search,
       });
-      if (!response.error) {
-        setData((response?.data ?? []) as unknown as Subscription[]);
-        setPagination((prev) => ({
-          ...prev,
-          currentTotalItems: response.pagination?.currentTotalItems ?? 0,
-          totalItems: response.pagination?.totalItems ?? 0,
-          totalPages: response.pagination?.totalPages ?? 0,
-        }));
-      }
+      setData(response?.data ?? []);
+      setPagination((prev) => ({
+        ...prev,
+        currentTotalItems: response.pagination?.currentTotalItems ?? 0,
+        totalItems: response.pagination?.totalItems ?? 0,
+        totalPages: response.pagination?.totalPages ?? 0,
+      }));
     } catch (error) {
-      console.error("Error fetching subscriptions:", error);
+      toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
       setLoading(false);
     }

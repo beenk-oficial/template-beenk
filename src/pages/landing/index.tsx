@@ -1,21 +1,25 @@
-import Hero from '@/components/landing/Hero';
-import Features from '@/components/landing/Features';
-import Pricing from '@/components/landing/Pricing';
-import Testimonials from '@/components/landing/Testimonials';
-import CTA from '@/components/landing/CTA';
-import Footer from '@/components/landing/Footer';
-import Navbar from '@/components/landing/Navbar';
+import { useWhitelabel } from "@/hooks/useWhitelabel"
+import { HeroSection } from "@/components/landing/HeroSection"
+import { LogosSection } from "@/components/landing/LogosSection"
+import { FeaturesSection } from "@/components/landing/FeaturesSection"
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
+import { PricingSection } from "@/components/landing/PricingSection"
+import { FAQSection } from "@/components/landing/FAQSection"
+import { CTASection } from "@/components/landing/CTASection"
 
-export default function Home() {
+export default function LandingPage() {
+  const { colors } = useWhitelabel()
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      <Hero />
-      <Features />
-      <Pricing />
-      <Testimonials />
-      <CTA />
-      <Footer />
-    </main>
-  );
+    <>
+      <HeroSection colors={colors} />
+      <LogosSection colors={colors} />
+      <FeaturesSection />
+      <HowItWorksSection colors={colors} />
+      <TestimonialsSection />
+      <PricingSection colors={colors} />
+      <FAQSection />
+      <CTASection />
+    </>
+  )
 }
