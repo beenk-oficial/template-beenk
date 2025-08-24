@@ -13,9 +13,20 @@ import AdminPlans from "@/pages/admin/plans";
 import AdminLicenses from "@/pages/admin/licenses";
 import AdminPromoCodes from "@/pages/admin/promo-codes";
 import AdminInvoices from "@/pages/admin/invoices";
+import AdminPayments from "@/pages/admin/payments";
+import AdminPayouts from "@/pages/admin/payouts";
 
 import AppLayout from "@/components/layout/AppLayout";
 import AppDashboard from "@/pages/app/dashboard";
+import AppCustomers from "@/pages/app/customers";
+import AppVehicles from "@/pages/app/vehicles";
+import AppServices from "@/pages/app/services";
+import AppProducts from "@/pages/app/products";
+import AppWorkOrders from "@/pages/app/work-orders";
+import AppSales from "@/pages/app/sales";
+import AppAccountsReceivable from "@/pages/app/accounts-receivable";
+import AppAccountsPayable from "@/pages/app/accounts-payable";
+import AppStockMovements from "@/pages/app/stock-movements";
 import { LandingLayout } from "@/components/layout/LandingLayout";
 
 
@@ -52,6 +63,8 @@ const routes = createBrowserRouter([
       { path: "licenses", Component: AdminLicenses },
       { path: "promo-codes", Component: AdminPromoCodes },
       { path: "invoices", Component: AdminInvoices },
+      { path: "payments", Component: AdminPayments },
+      { path: "payouts", Component: AdminPayouts },
     ],
   },
   {
@@ -59,6 +72,15 @@ const routes = createBrowserRouter([
     Component: AppLayout,
     children: [
       { path: "dashboard", Component: AppDashboard },
+      { path: "customers", Component: AppCustomers },
+      { path: "vehicles", Component: AppVehicles },
+      { path: "services", Component: AppServices },
+      { path: "products", Component: AppProducts },
+      { path: "work-orders", Component: AppWorkOrders },
+      { path: "sales", Component: AppSales },
+      { path: "accounts-receivable", Component: AppAccountsReceivable },
+      { path: "accounts-payable", Component: AppAccountsPayable },
+      { path: "stock-movements", Component: AppStockMovements },
     ],
   },
 ]);

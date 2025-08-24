@@ -1,6 +1,6 @@
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import { type IPagination, type Payment, PaymentStatus, SortOrder } from "@/types";
+import { type IPagination, type PaymentStatus, SortOrder } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import {
   IconCircleCheckFilled,
@@ -9,7 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { formatToLocaleCurrency, formatToLocaleDate } from "@/utils";
-import { getPaymentsPaginated } from "@/lib/supabase/api/admin/payments";
+import { getPayoutsPaginated } from "@/lib/supabase/api/admin/payouts";
 import { useToast } from "@/components/ui/toast";
 
 export default function Page() {
@@ -30,22 +30,22 @@ export default function Page() {
 
   const toast = useToast();
 
-  function renderStatus(row: Payment, t: any) {
+  function renderStatus(row: any) {
     let colorClass = "";
     let label = row.status;
     let Icon = null;
     switch (row.status) {
-      case PaymentStatus.PAID:
+      case "paid":
         colorClass = "bg-green-200 text-green-800";
         label = t("paid");
         Icon = IconCircleCheckFilled;
         break;
-      case PaymentStatus.PENDING:
+      case "pending":
         colorClass = "bg-yellow-200 text-yellow-800";
         label = t("pending");
         Icon = IconAlertTriangleFilled;
         break;
-      case PaymentStatus.FAILED:
+      case "failed":
         colorClass = "bg-red-200 text-red-800";
         label = t("failed");
         Icon = IconCircleXFilled;
@@ -66,43 +66,31 @@ export default function Page() {
   const columns = [
     {
       label: t("user"),
-      field: "users",
+      field: "payment.users",
       component: ({ row }: { row: any }) =>
-        row.users ? (
+        row.payment && row.payment.users ? (
           <div>
-            <div className="font-medium">{row.users.full_name}</div>
-            <div className="text-xs text-muted-foreground">{row.users.email}</div>
+            <div className="font-medium">{row.payment.users.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.payment.users.email}</div>
           </div>
         ) : (
           "-"
         ),
     },
     {
-      label: t("amount_total"),
-      field: "amount_total",
-      sortable: true,
-      format: formatToLocaleCurrency,
-    },
-    {
-      label: t("platform_fee"),
-      field: "platform_fee",
-      sortable: true,
-      format: (value: number) => `${(value).toFixed(2)} %`,
-    },
-    {
-      label: t("amount_received"),
-      field: "amount_received",
+      label: t("amount"),
+      field: "amount",
       sortable: true,
       format: formatToLocaleCurrency,
     },
     {
       label: t("status"),
       field: "status",
-      component: ({ row }: { row: Payment }) => renderStatus(row, t),
+      component: ({ row }: { row: any }) => renderStatus(row),
     },
     {
       label: "Stripe ID",
-      field: "stripe_payment_id",
+      field: "stripe_transfer_id",
       sortable: true,
     },
     {
@@ -112,10 +100,11 @@ export default function Page() {
       format: formatToLocaleDate,
     },
   ];
+
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await getPaymentsPaginated({
+      const response = await getPayoutsPaginated({
         page: updatedPagination?.currentPage ?? pagination.currentPage,
         perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
         sortField: updatedPagination?.sortField ?? pagination.sortField,

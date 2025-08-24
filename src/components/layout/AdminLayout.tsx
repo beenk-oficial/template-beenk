@@ -32,6 +32,7 @@ enum AdminRoutes {
   Subscriptions = "/admin/subscriptions",
   License = "/admin/licenses",
   Payments = "/admin/payments",
+  Payouts = "/admin/payouts",
   Invoices = "/admin/invoices",
   PromoCodes = "/admin/promo-codes",
   Referrals = "/admin/referrals",
@@ -144,14 +145,17 @@ export default function AdminLayout() {
           {
             title: t("invoices"),
             url: AdminRoutes.Invoices,
-            icon: FileText,
             isActive: location.pathname === AdminRoutes.Invoices,
           },
           {
             title: t("payments"),
             url: AdminRoutes.Payments,
-            icon: CreditCard,
             isActive: location.pathname === AdminRoutes.Payments,
+          },
+          {
+            title: t("payouts"),
+            url: AdminRoutes.Payouts,
+            isActive: location.pathname === AdminRoutes.Payouts,
           },
 
         ],

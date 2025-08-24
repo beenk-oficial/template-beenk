@@ -6,8 +6,17 @@ import {
   BookOpen,
   Bot,
   LayoutDashboard,
-  Settings2,
   SquareTerminal,
+  Users,
+  Package,
+  Box,
+  FileText,
+  CreditCard,
+  DollarSign,
+  Truck,
+  ClipboardList,
+  ShoppingCart,
+  ArrowLeftRight,
 } from "lucide-react";
 import { logout, refreshToken } from "@/lib/supabase/api/auth";
 import { useSession } from "@/hooks/useSession";
@@ -21,7 +30,15 @@ import { Spinner } from "../custom/Spinner";
 
 enum AppRoutes {
   Dashboard = "/app/dashboard",
-
+  Customers = "/app/customers",
+  Vehicles = "/app/vehicles",
+  Services = "/app/services",
+  Products = "/app/products",
+  WorkOrders = "/app/work-orders",
+  Sales = "/app/sales",
+  AccountsReceivable = "/app/accounts-receivable",
+  AccountsPayable = "/app/accounts-payable",
+  StockMovements = "/app/stock-movements",
 }
 
 export default function AppLayout() {
@@ -93,97 +110,75 @@ export default function AppLayout() {
         isActive: location.pathname === AppRoutes.Dashboard,
       },
       {
-        title: "Playground",
-        url: "#",
-        icon: SquareTerminal,
-        isActive: true,
-        items: [
-          {
-            title: "History",
-            url: "#",
-          },
-          {
-            title: "Starred",
-            url: "#",
-          },
-          {
-            title: "Settings",
-            url: "#",
-          },
-        ],
+        title: t("customers"),
+        url: AppRoutes.Customers,
+        icon: Users,
+        isActive: location.pathname.startsWith(AppRoutes.Customers),
       },
       {
-        title: "Models",
-        url: "#",
-        icon: Bot,
-        items: [
-          {
-            title: "Genesis",
-            url: "#",
-          },
-          {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
-          },
-        ],
+        title: t("vehicles"),
+        url: AppRoutes.Vehicles,
+        icon: Truck, // Alterado de Package para Truck
+        isActive: location.pathname.startsWith(AppRoutes.Vehicles),
       },
       {
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        items: [
-          {
-            title: "Introduction",
-            url: "#",
-          },
-          {
-            title: "Get Started",
-            url: "#",
-          },
-          {
-            title: "Tutorials",
-            url: "#",
-          },
-          {
-            title: "Changelog",
-            url: "#",
-          },
-        ],
+        title: t("services"),
+        url: AppRoutes.Services,
+        icon: ClipboardList, // Alterado de Bot para ClipboardList
+        isActive: location.pathname.startsWith(AppRoutes.Services),
       },
       {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        items: [
-          {
-            title: "General",
-            url: "#",
-          },
-          {
-            title: "Team",
-            url: "#",
-          },
-          {
-            title: "Billing",
-            url: "#",
-          },
-          {
-            title: "Limits",
-            url: "#",
-          },
-        ],
+        title: t("products"),
+        url: AppRoutes.Products,
+        icon: Box,
+        isActive: location.pathname.startsWith(AppRoutes.Products),
+      },
+      {
+        title: t("work_orders"),
+        url: AppRoutes.WorkOrders,
+        icon: FileText,
+        isActive: location.pathname.startsWith(AppRoutes.WorkOrders),
+      },
+      {
+        title: t("sales"),
+        url: AppRoutes.Sales,
+        icon: ShoppingCart, // Alterado de CreditCard para ShoppingCart
+        isActive: location.pathname.startsWith(AppRoutes.Sales),
+      },
+      {
+        title: t("accounts_receivable"),
+        url: AppRoutes.AccountsReceivable,
+        icon: DollarSign, // Alterado de BookOpen para DollarSign
+        isActive: location.pathname.startsWith(AppRoutes.AccountsReceivable),
+      },
+      {
+        title: t("accounts_payable"),
+        url: AppRoutes.AccountsPayable,
+        icon: CreditCard, // Mantido para representar pagamentos
+        isActive: location.pathname.startsWith(AppRoutes.AccountsPayable),
+      },
+      {
+        title: t("stock_movements"),
+        url: AppRoutes.StockMovements,
+        icon: ArrowLeftRight, // Alterado de SquareTerminal para ArrowLeftRight
+        isActive: location.pathname.startsWith(AppRoutes.StockMovements),
       },
     ],
   };
 
+    function findActiveTitle(items: any[]): string | undefined {
+    for (const item of items) {
+      if (item.isActive) return item.title;
+      if (item.items) {
+        const found = findActiveTitle(item.items);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }
 
-  const activeItem =
-    sidebarData.navMain.find((item) => item.isActive)?.title ||
-    t("dashboard");
+  const activeItem = findActiveTitle(sidebarData.navMain) || t("dashboard");
+
 
   if (loading) {
     return (
@@ -204,7 +199,7 @@ export default function AppLayout() {
     >
       <AppSidebar variant="inset" data={sidebarData} />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader activeTitle={activeItem} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <Outlet />

@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS roles (
 
     name TEXT NOT NULL,
     description TEXT NOT NULL,
+    permissions JSONB DEFAULT '[]'::jsonb,
 
     created_at TIMESTAMP DEFAULT now(),
     created_by TEXT,
@@ -406,12 +407,13 @@ CREATE TABLE IF NOT EXISTS payment (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    customer_id TEXT NOT NULL,                     -- ID do pagador na Stripe
-    amount_total NUMERIC NOT NULL,                 -- valor bruto pago
-    platform_fee NUMERIC NOT NULL,                 -- comissão da plataforma
-    amount_received NUMERIC NOT NULL,              -- valor líquido para o seller
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                     
+    amount_total NUMERIC NOT NULL,                 
+    platform_fee NUMERIC NOT NULL,                 
+    amount_received NUMERIC NOT NULL,              
     status payment_status DEFAULT 'pending',
-    stripe_payment_id TEXT NOT NULL,               -- PaymentIntent ou Checkout ID
+    stripe_payment_id TEXT NOT NULL,               
 
     created_at TIMESTAMP DEFAULT now(),
     created_by UUID,
@@ -426,9 +428,9 @@ CREATE TABLE IF NOT EXISTS payout (
 
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
     payment_id UUID NOT NULL REFERENCES payment(id) ON DELETE CASCADE,
-    amount NUMERIC NOT NULL,                       -- valor transferido
-    status payment_status DEFAULT 'pending',       -- mesmo ENUM: pending, paid, failed
-    stripe_transfer_id TEXT,                       -- ID da transferência na Stripe
+    amount NUMERIC NOT NULL,                       
+    status payment_status DEFAULT 'pending',      
+    stripe_transfer_id TEXT,                       
 
     created_at TIMESTAMP DEFAULT now(),
     created_by UUID,
