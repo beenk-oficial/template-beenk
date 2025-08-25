@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -11,20 +11,52 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotificationStore } from "@/stores/notification";
 import { useTranslation } from "react-i18next";
+import { fetchNotifications,markNotificationAsRead, markManyAsRead } from "@/lib/supabase/api/notification";
 
 export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; userId: string }) {
-    const { notifications, loading, error, fetchNotifications, markAsRead } = useNotificationStore();
+    const { notifications } = useNotificationStore();
     const { t } = useTranslation("general");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) fetchNotifications(userId);
-  }, [userId, fetchNotifications]);
+    if (userId) {
+    setLoading(true);
+    fetchNotifications(userId)
+      .catch(err => setError(err.message || "Erro ao carregar notificações"))
+      .finally(() => setLoading(false));
+    }
+  }, [userId]);
 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
   const markAllAsRead = async () => {
-    await Promise.all(notifications.map(n => markAsRead(n.id)));
+    try {
+      await markManyAsRead(
+        notifications.filter(n => !n.read_at).map(n => n.id)
+      );
+
+      useNotificationStore.getState().setNotifications(
+      notifications.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
+    );
+
+    } catch (err) {
+      console.error("Erro ao marcar todas como lidas:", err);
+    }
   };
+
+  const handleMarkAsRead = async (notificationId: string) => {
+  try {
+    await markNotificationAsRead(notificationId);
+    useNotificationStore.getState().setNotifications(
+      notifications.map(n =>
+        n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
+      )
+    );
+  } catch (err) {
+    console.error("Erro ao marcar notificação como lida:", err);
+  }
+};
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -69,16 +101,16 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                 </DropdownMenuItem>
               )}
 
-              {notifications.map(notif => (
+              {notifications.slice(0, 10).map(notif => (
                 <DropdownMenuItem
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id)}
+                  onClick={() => handleMarkAsRead(notif.id)}
                   className="flex flex-col items-start gap-1 p-3 cursor-pointer"
                 >
                   <div className="flex items-center gap-2 w-full">
-                    <span className="font-medium flex-1">{notif.title}</span>
+                    <span className="font-semibold flex-1">{notif.title}</span>
                     {!notif.read_at && (
-                      <span className="text-xs bg-sidebar text-popover-foreground px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-sidebar/50 text-popover-foreground px-2 py-0.5 rounded-full border border-popover-foreground/30">
                         {t("new")}
                       </span>
                     )}
