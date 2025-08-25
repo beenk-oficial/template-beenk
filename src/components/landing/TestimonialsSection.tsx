@@ -8,45 +8,39 @@ export function TestimonialsSection() {
   const { t } = useTranslation("landing")
   const testimonials = [
     {
-      quote:
-        "Has transformed how we manage our projects. The automation features have saved us countless hours of manual work.",
-      author: "Sarah Johnson",
-      role: "Project Manager, TechCorp",
+      quote: t("testimonial_1_quote"),
+      author: t("testimonial_1_author"),
+      role: t("testimonial_1_role"),
       rating: 5,
     },
     {
-      quote:
-        "The analytics dashboard provides insights we never had access to before. It's helped us make data-driven decisions that have improved our ROI.",
-      author: "Michael Chen",
-      role: "Marketing Director, GrowthLabs",
+      quote: t("testimonial_2_quote"),
+      author: t("testimonial_2_author"),
+      role: t("testimonial_2_role"),
       rating: 5,
     },
     {
-      quote:
-        "Customer support is exceptional. Any time we've had an issue, the team has been quick to respond and resolve it. Couldn't ask for better service.",
-      author: "Emily Rodriguez",
-      role: "Operations Lead, StartupX",
+      quote: t("testimonial_3_quote"),
+      author: t("testimonial_3_author"),
+      role: t("testimonial_3_role"),
       rating: 5,
     },
     {
-      quote:
-        "We've tried several similar solutions, but none compare to the ease of use and comprehensive features. It's been a game-changer.",
-      author: "David Kim",
-      role: "CEO, InnovateNow",
+      quote: t("testimonial_4_quote"),
+      author: t("testimonial_4_author"),
+      role: t("testimonial_4_role"),
       rating: 5,
     },
     {
-      quote:
-        "The collaboration tools have made remote work so much easier for our team. We're more productive than ever despite being spread across different time zones.",
-      author: "Lisa Patel",
-      role: "HR Director, RemoteFirst",
+      quote: t("testimonial_5_quote"),
+      author: t("testimonial_5_author"),
+      role: t("testimonial_5_role"),
       rating: 5,
     },
     {
-      quote:
-        "Implementation was seamless, and the ROI was almost immediate. We've reduced our operational costs by 30% since switching.",
-      author: "James Wilson",
-      role: "COO, ScaleUp Inc",
+      quote: t("testimonial_6_quote"),
+      author: t("testimonial_6_author"),
+      role: t("testimonial_6_role"),
       rating: 5,
     },
   ]

@@ -11,76 +11,88 @@ export function PricingSection({ colors }: { colors: Record<string, string> }) {
   const plans = {
     monthly: [
       {
-        name: "Starter",
-        price: "$29",
-        description: "Perfect for small teams and startups.",
-        features: ["Up to 5 team members", "Basic analytics", "5GB storage", "Email support"],
-        cta: "Start Free Trial",
+        name: t("pricing_starter"),
+        price: "R$49",
+        monthly: true,
+        description: t("pricing_starter_desc"),
+        features: [
+          t("pricing_feature_customers"),
+          t("pricing_feature_work_orders"),
+          t("pricing_feature_basic_reports"),
+          t("pricing_feature_email_support"),
+        ],
+        cta: t("pricing_start_trial"),
       },
       {
-        name: "Professional",
-        price: "$79",
-        description: "Ideal for growing businesses.",
+        name: t("pricing_professional"),
+        price: "R$99",
+        monthly: true,
+        description: t("pricing_professional_desc"),
         features: [
-          "Up to 20 team members",
-          "Advanced analytics",
-          "25GB storage",
-          "Priority email support",
-          "API access",
+          t("pricing_feature_customers"),
+          t("pricing_feature_work_orders"),
+          t("pricing_feature_products"),
+          t("pricing_feature_financial"),
+          t("pricing_feature_advanced_reports"),
+          t("pricing_feature_priority_support"),
         ],
-        cta: "Start Free Trial",
+        cta: t("pricing_start_trial"),
         popular: true,
       },
       {
-        name: "Enterprise",
-        price: "$199",
-        description: "For large organizations with complex needs.",
+        name: t("pricing_enterprise"),
+        price: t("pricing_contact"),
+        description: t("pricing_enterprise_desc"),
         features: [
-          "Unlimited team members",
-          "Custom analytics",
-          "Unlimited storage",
-          "24/7 phone & email support",
-          "Advanced API access",
-          "Custom integrations",
+          t("pricing_feature_unlimited"),
+          t("pricing_feature_integrations"),
+          t("pricing_feature_customization"),
+          t("pricing_feature_premium_support"),
         ],
-        cta: "Contact Sales",
+        cta: t("pricing_contact_sales"),
       },
     ],
     annually: [
       {
-        name: "Starter",
-        price: "$23",
-        description: "Perfect for small teams and startups.",
-        features: ["Up to 5 team members", "Basic analytics", "5GB storage", "Email support"],
-        cta: "Start Free Trial",
+        name: t("pricing_starter"),
+        price: "R$39",
+        monthly: true,
+        description: t("pricing_starter_desc"),
+        features: [
+          t("pricing_feature_customers"),
+          t("pricing_feature_work_orders"),
+          t("pricing_feature_basic_reports"),
+          t("pricing_feature_email_support"),
+        ],
+        cta: t("pricing_start_trial"),
       },
       {
-        name: "Professional",
-        price: "$63",
-        description: "Ideal for growing businesses.",
+        name: t("pricing_professional"),
+        price: "R$79",
+        monthly: true,
+        description: t("pricing_professional_desc"),
         features: [
-          "Up to 20 team members",
-          "Advanced analytics",
-          "25GB storage",
-          "Priority email support",
-          "API access",
+          t("pricing_feature_customers"),
+          t("pricing_feature_work_orders"),
+          t("pricing_feature_products"),
+          t("pricing_feature_financial"),
+          t("pricing_feature_advanced_reports"),
+          t("pricing_feature_priority_support"),
         ],
-        cta: "Start Free Trial",
+        cta: t("pricing_start_trial"),
         popular: true,
       },
       {
-        name: "Enterprise",
-        price: "$159",
-        description: "For large organizations with complex needs.",
+        name: t("pricing_enterprise"),
+        price: t("pricing_contact"),
+        description: t("pricing_enterprise_desc"),
         features: [
-          "Unlimited team members",
-          "Custom analytics",
-          "Unlimited storage",
-          "24/7 phone & email support",
-          "Advanced API access",
-          "Custom integrations",
+          t("pricing_feature_unlimited"),
+          t("pricing_feature_integrations"),
+          t("pricing_feature_customization"),
+          t("pricing_feature_premium_support"),
         ],
-        cta: "Contact Sales",
+        cta: t("pricing_contact_sales"),
       },
     ],
   }
@@ -132,14 +144,14 @@ export function PricingSection({ colors }: { colors: Record<string, string> }) {
                     >
                       {plan.popular && (
                         <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
-                          Most Popular
+                          {t("pricing_most_popular")}
                         </div>
                       )}
                       <CardContent className="p-6 flex flex-col h-full">
                         <h3 className="text-2xl font-bold">{plan.name}</h3>
                         <div className="flex items-baseline mt-4">
                           <span className="text-4xl font-bold">{plan.price}</span>
-                          <span className="text-muted-foreground ml-1">/month</span>
+                          {plan.monthly && <span className="text-muted-foreground ml-1">{t("pricing_per_month")}</span>}
                         </div>
                         <p className="text-muted-foreground mt-2">{plan.description}</p>
                         <ul className="space-y-3 my-6 flex-grow">
@@ -177,14 +189,14 @@ export function PricingSection({ colors }: { colors: Record<string, string> }) {
                     >
                       {plan.popular && (
                         <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium rounded-bl-lg">
-                          Most Popular
+                          {t("pricing_most_popular")}
                         </div>
                       )}
                       <CardContent className="p-6 flex flex-col h-full">
                         <h3 className="text-2xl font-bold">{plan.name}</h3>
                         <div className="flex items-baseline mt-4">
                           <span className="text-4xl font-bold">{plan.price}</span>
-                          <span className="text-muted-foreground ml-1">/month</span>
+                          {plan.monthly && <span className="text-muted-foreground ml-1">{t("pricing_per_month")}</span>}
                         </div>
                         <p className="text-muted-foreground mt-2">{plan.description}</p>
                         <ul className="space-y-3 my-6 flex-grow">

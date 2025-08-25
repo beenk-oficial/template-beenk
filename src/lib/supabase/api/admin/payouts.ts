@@ -31,7 +31,6 @@ export async function getPayoutsPaginated(data: {
 
         if (search) {
             query = query.ilike("payment.users.email", `%${search}%`).ilike("payment.users.full_name", `%${search}%`);
-
         }
 
         query = query.order(sortField, { ascending: sortOrder === "asc" });

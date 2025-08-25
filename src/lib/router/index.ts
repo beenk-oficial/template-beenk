@@ -8,13 +8,15 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
-import AdminUsers from "@/pages/admin/users";
+import AdminUsers from "@/pages/admin/company";
 import AdminPlans from "@/pages/admin/plans";
 import AdminLicenses from "@/pages/admin/licenses";
 import AdminPromoCodes from "@/pages/admin/promo-codes";
 import AdminInvoices from "@/pages/admin/invoices";
 import AdminPayments from "@/pages/admin/payments";
 import AdminPayouts from "@/pages/admin/payouts";
+import AdminReferrals from "@/pages/admin/referrals";
+import AdminSettingsCompany from "@/pages/admin/company";
 
 import AppLayout from "@/components/layout/AppLayout";
 import AppDashboard from "@/pages/app/dashboard";
@@ -65,6 +67,13 @@ const routes = createBrowserRouter([
       { path: "invoices", Component: AdminInvoices },
       { path: "payments", Component: AdminPayments },
       { path: "payouts", Component: AdminPayouts },
+      { path: "referrals", Component: AdminReferrals },
+      {
+        path: "settings", children: [
+          { path: "company", Component: AdminSettingsCompany }
+        ]
+      },
+
     ],
   },
   {

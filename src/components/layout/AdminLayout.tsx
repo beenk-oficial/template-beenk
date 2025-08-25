@@ -39,7 +39,6 @@ enum AdminRoutes {
   Roles = "/admin/roles",
   SettingsCompany = "/admin/settings/company",
   SettingsWhitelabel = "/admin/settings/whitelabel",
-  SettingsBilling = "/admin/settings/billing",
   Settings = "/admin/settings",
 }
 
@@ -204,10 +203,6 @@ export default function AdminLayout() {
           {
             title: t("whitelabel"),
             url: AdminRoutes.SettingsWhitelabel,
-          },
-          {
-            title: t("billing"),
-            url: AdminRoutes.SettingsBilling,
           },
         ],
       },
