@@ -8,7 +8,20 @@ export async function getCompany() {
   try {
     const { data, error } = await supabase
       .from("companies")
-      .select("*")
+      .select(`
+        *,
+        addresses:address_id (
+          id,
+          address_line,
+          number,
+          complement,
+          neighborhood,
+          city,
+          state,
+          postal_code,
+          country
+        )
+      `)
       .eq("id", companyId)
       .single();
 
@@ -46,5 +59,56 @@ export async function updateCompany({
     return data;
   } catch (error) {
     throw error;
+  }
+}
+
+export async function upsertAddress(address: {
+  id?: string;
+  address_line: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country?: string;
+  user_id?: string;
+}) {
+  if (!address) throw new Error("Missing address data");
+
+  const payload = {
+    address_line: address.address_line,
+    number: address.number,
+    complement: address.complement,
+    neighborhood: address.neighborhood,
+    city: address.city,
+    state: address.state,
+    postal_code: address.postal_code,
+    country: address.country || "BR",
+    updated_at: new Date(),
+    updated_by: address.user_id || null,
+  };
+
+  if (address.id) {
+    const { data, error } = await supabase
+      .from("addresses")
+      .update(payload)
+      .eq("id", address.id)
+      .select()
+      .single();
+    if (error) throw new Error("Failed to update address");
+    return data;
+  } else {
+    const { data, error } = await supabase
+      .from("addresses")
+      .insert([{
+        ...payload,
+        created_at: new Date(),
+        created_by: address.user_id || null,
+      }])
+      .select()
+      .single();
+    if (error) throw new Error("Failed to create address");
+    return data;
   }
 }

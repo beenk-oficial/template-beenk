@@ -39,7 +39,6 @@ enum AdminRoutes {
   Roles = "/admin/roles",
   SettingsCompany = "/admin/settings/company",
   SettingsWhitelabel = "/admin/settings/whitelabel",
-  Settings = "/admin/settings",
 }
 
 export default function AdminLayout() {
@@ -188,21 +187,20 @@ export default function AdminLayout() {
           },
         ]
       },
-
-
-
       {
         title: t("settings"),
         icon: Settings,
-        isActive: location.pathname.startsWith(AdminRoutes.Settings),
         items: [
           {
             title: t("company"),
             url: AdminRoutes.SettingsCompany,
+            isActive: location.pathname === AdminRoutes.SettingsCompany,
           },
+
           {
             title: t("whitelabel"),
             url: AdminRoutes.SettingsWhitelabel,
+            isActive: location.pathname === AdminRoutes.SettingsWhitelabel,
           },
         ],
       },
@@ -245,7 +243,6 @@ export default function AdminLayout() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <Outlet />
-
           </div>
         </div>
       </SidebarInset>
