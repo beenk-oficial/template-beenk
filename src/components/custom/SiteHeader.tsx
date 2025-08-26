@@ -21,10 +21,10 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
 
   useEffect(() => {
     if (userId) {
-    setLoading(true);
-    fetchNotifications(userId)
-      .catch(err => setError(err.message || "Erro ao carregar notificações"))
-      .finally(() => setLoading(false));
+      setLoading(true);
+      fetchNotifications(userId)
+        .catch(err => setError(err.message || "Erro ao carregar notificações"))
+        .finally(() => setLoading(false));
     }
   }, [userId]);
 
@@ -57,6 +57,8 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
     console.error("Erro ao marcar notificação como lida:", err);
   }
 };
+
+  const slicedNotifications = notifications.slice(0, 10);
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -92,34 +94,46 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                 </div>
               )}
 
+              
+
+              {slicedNotifications.map((notif, index) => (
+                <div key={notif.id} className="w-full">
+                  <DropdownMenuItem
+                    onClick={() => handleMarkAsRead(notif.id)}
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      <span className="font-semibold flex-1">{notif.title}</span>
+                      {!notif.read_at && (
+                        <span className="text-xs bg-sidebar/50 text-popover-foreground px-2 py-0.5 rounded-full border border-popover-foreground/30">
+                          {t("new")}
+                        </span>
+                      )}
+                    </div>
+                    {notif.message && (
+                      <p className="text-sm text-gray-400">{notif.message}</p>
+                    )}
+                  </DropdownMenuItem>
+
+                  {index < slicedNotifications.length - 1 && (
+                    <Separator className="my-1" />
+                  )}
+                </div>
+              ))}
+
               {notifications.length > 0 && (
-                <DropdownMenuItem
-                  onClick={markAllAsRead}
-                  className="text-muted-foreground cursor-pointer font-medium"
-                >
-                  {t("mark_all_as_read")}
-                </DropdownMenuItem>
+                <div>
+                  <Separator className="my-1" />
+                  <DropdownMenuItem
+                    onClick={markAllAsRead}
+                    className="text-muted-foreground cursor-pointer font-medium"
+                  >
+                    {t("mark_all_as_read")}
+                  </DropdownMenuItem>
+                </div>
+                
               )}
 
-              {notifications.slice(0, 10).map(notif => (
-                <DropdownMenuItem
-                  key={notif.id}
-                  onClick={() => handleMarkAsRead(notif.id)}
-                  className="flex flex-col items-start gap-1 p-3 cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <span className="font-semibold flex-1">{notif.title}</span>
-                    {!notif.read_at && (
-                      <span className="text-xs bg-sidebar/50 text-popover-foreground px-2 py-0.5 rounded-full border border-popover-foreground/30">
-                        {t("new")}
-                      </span>
-                    )}
-                  </div>
-                  {notif.message && (
-                    <p className="text-sm text-gray-400">{notif.message}</p>
-                  )}
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
