@@ -1,21 +1,20 @@
-import AdminLayout from "@/components/layout/AdminLayout";
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import { IPagination, SortOrder, Payment, PaymentStatus } from "@/types";
-import { useFetch } from "@/hooks/useFetch";
+import { type IPagination, type Payment, PaymentStatus, SortOrder } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import {
   IconCircleCheckFilled,
-  IconCircleXFilled,
   IconAlertTriangleFilled,
+  IconCircleXFilled,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { formatToLocaleDate } from "@/utils";
+import { formatToLocaleCurrency, formatToLocaleDate } from "@/utils";
+import { getPaymentsPaginated } from "@/lib/supabase/api/admin/payments";
+import { useToast } from "@/components/ui/toast";
 
 export default function Page() {
-  const {t} = useTranslation("general");
-  const customFetch = useFetch();
-  const [data, setData] = useState<Payment[]>([]);
+  const { t } = useTranslation("general");
+  const [data, setData] = useState<any[]>([]);
 
   const [pagination, setPagination] = useState<IPagination>({
     sortField: "created_at",
@@ -28,6 +27,8 @@ export default function Page() {
     search: "",
   });
   const [loading, setLoading] = useState(false);
+
+  const toast = useToast();
 
   function renderStatus(row: Payment, t: any) {
     let colorClass = "";
@@ -64,27 +65,35 @@ export default function Page() {
 
   const columns = [
     {
-      label: t("customer_id"),
-      field: "customer_id",
-      sortable: true,
+      label: t("user"),
+      field: "users",
+      component: ({ row }: { row: any }) =>
+        row.users ? (
+          <div>
+            <div className="font-medium">{row.users.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.users.email}</div>
+          </div>
+        ) : (
+          "-"
+        ),
     },
     {
       label: t("amount_total"),
       field: "amount_total",
       sortable: true,
-      format: (v: number) => v?.toLocaleString(undefined, { style: "currency", currency: "USD" }),
+      format: formatToLocaleCurrency,
     },
     {
       label: t("platform_fee"),
       field: "platform_fee",
       sortable: true,
-      format: (v: number) => v?.toLocaleString(undefined, { style: "currency", currency: "USD" }),
+      format: (value: number) => `${(value).toFixed(2)} %`,
     },
     {
       label: t("amount_received"),
       field: "amount_received",
       sortable: true,
-      format: (v: number) => v?.toLocaleString(undefined, { style: "currency", currency: "USD" }),
+      format: formatToLocaleCurrency,
     },
     {
       label: t("status"),
@@ -92,7 +101,7 @@ export default function Page() {
       component: ({ row }: { row: Payment }) => renderStatus(row, t),
     },
     {
-      label: t("stripe_payment_id"),
+      label: "Stripe ID",
       field: "stripe_payment_id",
       sortable: true,
     },
@@ -103,31 +112,25 @@ export default function Page() {
       format: formatToLocaleDate,
     },
   ];
-
   const fetchData = async (updatedPagination: IPagination | null = null) => {
     setLoading(true);
     try {
-      const response = await customFetch("/api/admin/payments", {
-        query: {
-          page: updatedPagination?.currentPage ?? pagination.currentPage,
-          perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
-          sortField: updatedPagination?.sortField ?? pagination.sortField,
-          sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
-          search: updatedPagination?.search ?? pagination.search,
-        },
+      const response = await getPaymentsPaginated({
+        page: updatedPagination?.currentPage ?? pagination.currentPage,
+        perPage: updatedPagination?.itemsPerPage ?? pagination.itemsPerPage,
+        sortField: updatedPagination?.sortField ?? pagination.sortField,
+        sortOrder: updatedPagination?.sortOrder ?? pagination.sortOrder,
+        search: updatedPagination?.search ?? pagination.search,
       });
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data);
-        setPagination((prev) => ({
-          ...prev,
-          currentTotalItems: result.pagination.currentTotalItems,
-          totalItems: result.pagination.totalItems,
-          totalPages: result.pagination.totalPages,
-        }));
-      }
+      setData(response?.data ?? []);
+      setPagination((prev) => ({
+        ...prev,
+        currentTotalItems: response.pagination?.currentTotalItems ?? 0,
+        totalItems: response.pagination?.totalItems ?? 0,
+        totalPages: response.pagination?.totalPages ?? 0,
+      }));
     } catch (error) {
-      console.error("Error fetching payments:", error);
+      toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
       setLoading(false);
     }
@@ -143,16 +146,14 @@ export default function Page() {
   };
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <CustomTable
-          data={data}
-          columns={columns}
-          pagination={pagination}
-          loading={loading}
-          onRequest={handleRequest}
-        />
-      </div>
-    </AdminLayout>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <CustomTable
+        data={data}
+        columns={columns}
+        pagination={pagination}
+        loading={loading}
+        onRequest={handleRequest}
+      />
+    </div>
   );
 }

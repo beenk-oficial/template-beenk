@@ -7,6 +7,7 @@ interface CustomInputProps {
   children?: React.ReactNode;
   error?: string;
   required?: boolean;
+  instruction?: string;
   additionalElement?: React.ReactNode;
   labelPosition?: "top" | "left";
 }
@@ -17,21 +18,20 @@ const CustomInputGroup: React.FC<CustomInputProps> = ({
   children,
   error,
   required = false,
+  instruction,
   additionalElement,
   labelPosition = "top",
 }) => {
   return (
     <div className="grid gap-3 ">
       <div
-        className={`gap-3 ${
-          labelPosition === "left" ? "flex items-center " : "grid"
-        }`}
+        className={`gap-3 ${labelPosition === "left" ? "flex items-center " : "grid"
+          }`}
       >
         {(label || additionalElement) && (
           <div
-            className={`flex items-center ${
-              labelPosition === "left" ? "order-last" : "order-first"
-            }`}
+            className={`flex items-center ${labelPosition === "left" ? "order-last" : "order-first"
+              }`}
           >
             {label && <Label htmlFor={htmlFor}>
               {label} {required && <span className="text-red-500">*</span>}
@@ -45,6 +45,7 @@ const CustomInputGroup: React.FC<CustomInputProps> = ({
         {children}
       </div>
       {error && <p className="text-red-500 text-sm">{error}</p>}
+      {instruction && <p className="text-muted-foreground text-sm -mt-2 ml-1">{instruction}</p>}
     </div>
   );
 };

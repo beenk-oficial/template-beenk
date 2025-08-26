@@ -4,9 +4,13 @@ import CustomForm from "@/components/custom/Input/CustomForm";
 import CustomInput from "@/components/custom/Input/CustomInput";
 import { useTranslation } from "react-i18next";
 import CustomSelect from "@/components/custom/Input/CustomSelect";
-import CustomDatePicker from "@/components/custom/Input/CustomDatePicker";
-import { getPromoCodesPaginated } from "@/lib/supabase/api/admin/promo-codes"; // Import para checar unicidade
+import { getPromoCodesPaginated } from "@/lib/supabase/api/admin/promo-codes";
 import { SortOrder } from "@/types";
+import CustomDateTimePicker from "@/components/custom/Input/CustomDateTimePicker";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 export default function Form({
   data,
@@ -88,9 +92,10 @@ export default function Form({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (onSubmit) onSubmit({
       ...formData,
-      expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
+      expires_at: formData.expires_at
     });
   };
 
@@ -167,10 +172,10 @@ export default function Form({
           required
         />
 
-        <CustomDatePicker
+        <CustomDateTimePicker
           name="expires_at"
           label={t("expires_at")}
-          value={formData.expires_at}
+          value={formData.expires_at || undefined}
           onChange={(value) => handleChange("expires_at", value)}
           disabled={loading}
         />

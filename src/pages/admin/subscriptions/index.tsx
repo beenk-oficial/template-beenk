@@ -1,6 +1,6 @@
 import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
-import  { type IPagination, SortOrder, type Subscription, SubscriptionStatus } from "@/types";
+import { type IPagination, SortOrder, type Subscription, SubscriptionStatus } from "@/types";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +18,7 @@ import { useSession } from "@/hooks/useSession";
 import { getSubscriptionPaginated } from "@/lib/supabase/api/admin/subscription";
 
 export default function Page() {
-  const {t} = useTranslation("general");
+  const { t } = useTranslation("general");
   const { companyId } = useSession();
   const [data, setData] = useState<Subscription[]>([]);
 
@@ -91,17 +91,31 @@ export default function Page() {
 
   const columns = [
     {
-      label: t("email"),
+      label: t("user"),
       field: "email",
+      component: ({ row }: { row: any }) =>
+        row.users ? (
+          <div>
+            <div className="font-medium">{row.users.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.users.email}</div>
+          </div>
+        ) : (
+          "-"
+        ),
     },
     {
       label: t("status"),
       field: "status",
-      component: ({ row }: { row: any}) => renderStatus(row, t),
+      component: ({ row }: { row: any }) => renderStatus(row, t),
     },
     {
       label: t("plan"),
       field: "plan_id",
+      component: ({ row }: { row: any }) => (
+        <Badge variant="outline" className="text-muted-foreground px-1.5">
+          {row.plan?.name}
+        </Badge>
+      ),
     },
     {
       label: t("trial_start"),
@@ -176,14 +190,14 @@ export default function Page() {
   };
 
   return (
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <CustomTable
-          data={data}
-          columns={columns}
-          pagination={pagination}
-          loading={loading}
-          onRequest={handleRequest}
-        />
-      </div>
+    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <CustomTable
+        data={data}
+        columns={columns}
+        pagination={pagination}
+        loading={loading}
+        onRequest={handleRequest}
+      />
+    </div>
   );
 }

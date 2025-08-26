@@ -28,6 +28,13 @@ export default function App({ children }: AppProps) {
     }).then(() => setLoading(false));
   }, []);
 
+
+  //@TODO: change to has dynamic SEO
+  const seoTitle = "Beenk - Plataforma de Gestão";
+  const seoDescription = "A melhor plataforma para gestão de assinaturas, clientes e faturamento.";
+  const seoIcon = "/beenk_favicon.ico";
+  const seoKeywords = "gestão, assinaturas, clientes, faturamento, beenk, plataforma, saas";
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-background/20">
@@ -37,8 +44,14 @@ export default function App({ children }: AppProps) {
   }
 
   return (
-    <ToastProvider>
-      {children}
-    </ToastProvider>
+    <>
+      <title>{seoTitle}</title>
+      <meta name="description" content={seoDescription} />
+      <meta name="keywords" content={seoKeywords} />
+      <link rel="icon" type="image/x-icon" href={seoIcon} />
+      <ToastProvider>
+        {children}
+      </ToastProvider>
+    </>
   );
 }

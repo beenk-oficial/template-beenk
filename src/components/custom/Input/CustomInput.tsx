@@ -14,10 +14,13 @@ interface CustomInputProps {
   error?: string;
   disabled?: boolean;
   additionalElement?: React.ReactNode;
-  onChange: (value: string) => void;
-  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
+  step?: string;
+  instruction?: string;
+  onChange: (value: string) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+
 }
 
 const CustomInput: React.FC<CustomInputProps> = ({
@@ -29,18 +32,21 @@ const CustomInput: React.FC<CustomInputProps> = ({
   label,
   htmlFor,
   error = "",
+  instruction,
   required = false,
   disabled = false,
-  onChange,
   additionalElement,
-  onKeyDown,
   icon,
+  step,
+  onKeyDown,
+  onChange,
 }) => {
   return (
     <CustomInputGroup
       label={label}
       htmlFor={htmlFor ?? name}
       error={error}
+      instruction={instruction}
       required={required}
       additionalElement={additionalElement}
     >
@@ -61,6 +67,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           className={icon ? `pl-9` : ""}
+          step={step}
         />
       </div>
     </CustomInputGroup>

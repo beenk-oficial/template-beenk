@@ -2,7 +2,7 @@ import { CustomTable } from "@/components/custom/Table/CustomTable";
 import { useState, useEffect } from "react";
 import { type IPagination, SortOrder } from "@/types";
 import { useTranslation } from "react-i18next";
-import { formatToLocaleDate } from "@/utils";
+import { formatToLocaleDate, formatToLocaleDateWithTime } from "@/utils";
 import {
   deletePromoCodes,
   getPromoCodesPaginated,
@@ -89,7 +89,7 @@ export default function Page() {
     {
       label: t("expires_at"),
       field: "expires_at",
-      format: formatToLocaleDate,
+      format: formatToLocaleDateWithTime,
     },
     {
       label: t("created_at"),

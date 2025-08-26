@@ -29,6 +29,7 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
+      isActive?: boolean;
     }[];
   }[];
 }) {
@@ -63,7 +64,11 @@ export function NavMain({
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubItem key={subItem.title} className={
+                          subItem.isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground rounded-md"
+                            : ""
+                        }>
                           <SidebarMenuSubButton asChild>
                             <CustomLink href={subItem.url}>
                               <span>{subItem.title}</span>

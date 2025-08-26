@@ -27,7 +27,7 @@ export async function getSubscriptionPaginated(data: {
             .from("subscriptions")
             .select(
                 `id,status,plan_id,trial_start,trial_end,current_period_start,current_period_end,canceled_at,created_at,
-                 users!inner(email)`,
+                 users!inner(full_name, email), plan:plans(id,name)`,
                 { count: "exact" }
             )
             .eq("owner_type", SubscriptionOwnerType.USER)

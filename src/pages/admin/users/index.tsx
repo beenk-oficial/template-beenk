@@ -41,14 +41,16 @@ export default function Page() {
 
   const columns = [
     {
-      label: t("name"),
+      label: t("user"),
       field: "full_name",
       sortable: true,
-    },
-    {
-      label: t("email"),
-      field: "email",
-      sortable: true,
+      component: ({ row }: { row: any }) =>
+         (
+          <div>
+            <div className="font-medium">{row.full_name}</div>
+            <div className="text-xs text-muted-foreground">{row.email}</div>
+          </div>
+        ) 
     },
     {
       label: t("type"),
@@ -146,7 +148,7 @@ export default function Page() {
         search: updatedPagination?.search ?? pagination.search,
       });
 
-      setData((response?.data) ?? []) ;
+      setData((response?.data) ?? []);
       setPagination((prev) => ({
         ...prev,
         currentTotalItems: response.pagination?.currentTotalItems ?? 0,

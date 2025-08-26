@@ -32,14 +32,13 @@ enum AdminRoutes {
   Subscriptions = "/admin/subscriptions",
   License = "/admin/licenses",
   Payments = "/admin/payments",
+  Payouts = "/admin/payouts",
   Invoices = "/admin/invoices",
   PromoCodes = "/admin/promo-codes",
   Referrals = "/admin/referrals",
   Roles = "/admin/roles",
   SettingsCompany = "/admin/settings/company",
   SettingsWhitelabel = "/admin/settings/whitelabel",
-  SettingsBilling = "/admin/settings/billing",
-  Settings = "/admin/settings",
 }
 
 export default function AdminLayout() {
@@ -144,14 +143,17 @@ export default function AdminLayout() {
           {
             title: t("invoices"),
             url: AdminRoutes.Invoices,
-            icon: FileText,
             isActive: location.pathname === AdminRoutes.Invoices,
           },
           {
             title: t("payments"),
             url: AdminRoutes.Payments,
-            icon: CreditCard,
             isActive: location.pathname === AdminRoutes.Payments,
+          },
+          {
+            title: t("payouts"),
+            url: AdminRoutes.Payouts,
+            isActive: location.pathname === AdminRoutes.Payouts,
           },
 
         ],
@@ -185,25 +187,20 @@ export default function AdminLayout() {
           },
         ]
       },
-
-
-
       {
         title: t("settings"),
         icon: Settings,
-        isActive: location.pathname.startsWith(AdminRoutes.Settings),
         items: [
           {
             title: t("company"),
             url: AdminRoutes.SettingsCompany,
+            isActive: location.pathname === AdminRoutes.SettingsCompany,
           },
+
           {
             title: t("whitelabel"),
             url: AdminRoutes.SettingsWhitelabel,
-          },
-          {
-            title: t("billing"),
-            url: AdminRoutes.SettingsBilling,
+            isActive: location.pathname === AdminRoutes.SettingsWhitelabel,
           },
         ],
       },
@@ -246,7 +243,6 @@ export default function AdminLayout() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <Outlet />
-
           </div>
         </div>
       </SidebarInset>
