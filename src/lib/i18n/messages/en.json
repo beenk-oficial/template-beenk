@@ -227,7 +227,10 @@
     "referred_user": "Referred User",
     "referral_code": "Referral Code",
     "accepted": "Accepted",
-    "rewarded": "Rewarded"
+    "rewarded": "Rewarded",
+    "no_notifications": "No notifications",
+    "mark_all_as_read": "Mark all as read",
+    "new": "New"
   },
   "landing": {
     "nav_features": "Features",

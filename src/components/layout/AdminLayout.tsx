@@ -239,7 +239,7 @@ export default function AdminLayout() {
     >
       <AppSidebar variant="inset" data={sidebarData} />
       <SidebarInset>
-        <SiteHeader activeTitle={activeItem} />
+        <SiteHeader activeTitle={activeItem} userId={user?.id || ""} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <Outlet />
