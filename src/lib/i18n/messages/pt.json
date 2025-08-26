@@ -257,7 +257,10 @@
     "address_city": "Cidade",
     "address_state": "Estado",
     "address_zip": "CEP",
-    "stripe_connect_id": "Stripe Connect ID"
+    "stripe_connect_id": "Stripe Connect ID",
+    "no_notifications": "Sem notificações",
+    "mark_all_as_read": "Marcar todas como lidas",
+    "new": "Novo"
   },
   "landing": {
     "nav_features": "Funcionalidades",

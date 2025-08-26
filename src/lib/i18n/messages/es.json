@@ -256,7 +256,10 @@
     "address_city": "Ciudad",
     "address_state": "Estado",
     "address_zip": "Código Postal",
-    "stripe_connect_id": "Stripe Connect ID"
+    "stripe_connect_id": "Stripe Connect ID",
+    "no_notifications": "Sin notificaciones",
+    "mark_all_as_read": "Marcar todas como leídas",
+    "new": "Nuevo"
   },
   "landing": {
     "nav_features": "Funcionalidades",
