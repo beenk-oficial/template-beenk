@@ -8,7 +8,7 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminSubscriptions from "@/pages/admin/subscriptions";
-import AdminUsers from "@/pages/admin/company";
+import AdminUsers from "@/pages/admin/users";
 import AdminPlans from "@/pages/admin/plans";
 import AdminLicenses from "@/pages/admin/licenses";
 import AdminPromoCodes from "@/pages/admin/promo-codes";
@@ -17,6 +17,7 @@ import AdminPayments from "@/pages/admin/payments";
 import AdminPayouts from "@/pages/admin/payouts";
 import AdminReferrals from "@/pages/admin/referrals";
 import AdminSettingsCompany from "@/pages/admin/company";
+import AdminSettingsWhitelabel from "@/pages/admin/whitelabel";
 
 import AppLayout from "@/components/layout/AppLayout";
 import AppDashboard from "@/pages/app/dashboard";
@@ -70,10 +71,10 @@ const routes = createBrowserRouter([
       { path: "referrals", Component: AdminReferrals },
       {
         path: "settings", children: [
-          { path: "company", Component: AdminSettingsCompany }
+          { path: "company", Component: AdminSettingsCompany },
+          { path: "whitelabel", Component: AdminSettingsWhitelabel }
         ]
       },
-
     ],
   },
   {

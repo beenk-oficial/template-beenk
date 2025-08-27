@@ -165,7 +165,7 @@ export default function Page() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 max-w-4xl mx-auto w-full">
+    <div className="flex flex-col gap-6 p-4 max-w-4xl  w-full">
       <form className="flex flex-col gap-6 w-full" onSubmit={handleSubmit}>
 
         {/* Dados Gerais */}
