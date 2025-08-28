@@ -2,16 +2,32 @@ import { supabase } from "@/lib/supabase";
 import type { Notification } from "@/types";
 import { useNotificationStore } from "@/stores/notification";
 
+type FetchOptions = {
+  limit?: number;
+  onlyUnread?: boolean;
+};
 
-export async function fetchNotifications(userId: string) {
+
+export async function fetchNotifications(userId: string, options: FetchOptions = {}) {
   const setNotifications = useNotificationStore.getState().setNotifications;
+  const { limit, onlyUnread } = options;
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("notifications")
       .select("*")
       .eq("user_id", userId)
       .order("sent_at", { ascending: false });
+
+    if (onlyUnread) {
+      query = query.is("read_at", null);
+    }
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Erro ao buscar notificações:", error);

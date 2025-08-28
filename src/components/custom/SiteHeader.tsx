@@ -11,22 +11,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotificationStore } from "@/stores/notification";
 import { useTranslation } from "react-i18next";
-import { fetchNotifications,markNotificationAsRead, markManyAsRead } from "@/lib/supabase/api/notification";
+import { fetchNotifications, markNotificationAsRead, markManyAsRead } from "@/lib/supabase/api/notification";
 
 export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; userId: string }) {
-    const { notifications } = useNotificationStore();
-    const { t } = useTranslation("general");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const { notifications } = useNotificationStore();
+  const { t } = useTranslation("general");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+
 
   useEffect(() => {
     if (userId) {
-      setLoading(true);
-      fetchNotifications(userId)
-        .catch(err => setError(err.message || "Erro ao carregar notificações"))
-        .finally(() => setLoading(false));
+      loadUnread()
     }
   }, [userId]);
+
+  const loadUnread = async () => {
+    try {
+      setLoading(true);
+      const result = await fetchNotifications(userId, { limit: 6, onlyUnread: true });
+      useNotificationStore.getState().setNotifications(result);
+    } catch (err: any) {
+      setError(err.message || "Erro ao carregar notificações");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
@@ -37,8 +48,10 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
       );
 
       useNotificationStore.getState().setNotifications(
-      notifications.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
-    );
+        notifications.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
+      );
+
+      setDirty(true);
 
     } catch (err) {
       console.error("Erro ao marcar todas como lidas:", err);
@@ -46,19 +59,30 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
   };
 
   const handleMarkAsRead = async (notificationId: string) => {
-  try {
-    await markNotificationAsRead(notificationId);
-    useNotificationStore.getState().setNotifications(
-      notifications.map(n =>
-        n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
-      )
-    );
-  } catch (err) {
-    console.error("Erro ao marcar notificação como lida:", err);
-  }
-};
+    try {
+      await markNotificationAsRead(notificationId);
+      useNotificationStore.getState().setNotifications(
+        notifications.map(n =>
+          n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
+        )
+      );
 
-  const slicedNotifications = notifications.slice(0, 10);
+      setDirty(true);
+
+    } catch (err) {
+      console.error("Erro ao marcar notificação como lida:", err);
+    }
+  };
+
+  const handleMenuOpen = async () => {
+    const hasReadInside =
+      notifications.length > 0 && notifications.some((n) => n.read_at);
+
+    if (dirty && hasReadInside) {
+      await loadUnread();
+      setDirty(false);
+    }
+  };
 
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -67,13 +91,13 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
         <h1 className="text-base font-medium">{activeTitle}</h1>
         <div className="ml-auto flex items-center gap-2">
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => open && handleMenuOpen()}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="relative rounded-md border">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className={`absolute -top-1 -right-1 bg-red-500 text-white font-light rounded-full flex items-center justify-center w-4 h-4 ${unreadCount >= 10 ? "text-[10px]" : "text-[8px]"}`}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                  <span className={`absolute -top-1 -right-1 bg-red-500 text-white font-light rounded-full flex items-center justify-center w-4 h-4 ${unreadCount >= 5 ? "text-[10px]" : "text-[8px]"}`}>
+                    {unreadCount > 5 ? "5+" : unreadCount}
                   </span>
                 )}
               </Button>
@@ -94,12 +118,15 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                 </div>
               )}
 
-              
 
-              {slicedNotifications.map((notif, index) => (
+
+              {notifications.map((notif, index) => (
                 <div key={notif.id} className="w-full">
                   <DropdownMenuItem
-                    onClick={() => handleMarkAsRead(notif.id)}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      handleMarkAsRead(notif.id);
+                    }}
                     className="flex flex-col items-start gap-1 p-3 cursor-pointer"
                   >
                     <div className="flex items-center gap-2 w-full">
@@ -115,7 +142,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                     )}
                   </DropdownMenuItem>
 
-                  {index < slicedNotifications.length - 1 && (
+                  {index < notifications.length - 1 && (
                     <Separator className="my-1" />
                   )}
                 </div>
@@ -131,7 +158,7 @@ export function SiteHeader({ activeTitle, userId }: { activeTitle?: string; user
                     {t("mark_all_as_read")}
                   </DropdownMenuItem>
                 </div>
-                
+
               )}
 
             </DropdownMenuContent>
