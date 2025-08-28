@@ -16,8 +16,8 @@ import AdminInvoices from "@/pages/admin/invoices";
 import AdminPayments from "@/pages/admin/payments";
 import AdminPayouts from "@/pages/admin/payouts";
 import AdminReferrals from "@/pages/admin/referrals";
-import AdminSettingsCompany from "@/pages/admin/company";
-import AdminSettingsWhitelabel from "@/pages/admin/whitelabel";
+import AdminSettingsCompany from "@/pages/admin/config/company";
+import AdminSettingsWhitelabel from "@/pages/admin/config/whitelabel";
 
 import AppLayout from "@/components/layout/AppLayout";
 import AppDashboard from "@/pages/app/dashboard";

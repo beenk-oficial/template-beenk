@@ -20,6 +20,16 @@ export async function getCompany() {
           state,
           postal_code,
           country
+        ),
+        whitelabel:white_label_id (
+          id,
+          logo_path,
+          favicon_path,
+          banner_login_path,
+          banner_signup_path,
+          banner_change_password_path,
+          banner_request_password_reset_path,
+          colors
         )
       `)
       .eq("id", companyId)

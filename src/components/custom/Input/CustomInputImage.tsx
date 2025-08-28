@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { ImagePlus, X as IconX } from "lucide-react";
 
 interface CustomInputImageProps {
@@ -10,6 +10,7 @@ interface CustomInputImageProps {
   allowedFormats?: string[];
   onChange?: (files: File[]) => void;
   className?: string; 
+  value?: string | string[] | File | File[]; 
 }
 
 const CustomInputImage: React.FC<CustomInputImageProps> = ({
@@ -21,9 +22,10 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
   allowedFormats,
   onChange,
   className = "", 
+  value,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<string[] | File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const computedAccept = allowedFormats
@@ -89,6 +91,17 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
     e.stopPropagation();
     handleRemove(idx);
   };
+
+  useEffect(() => {
+    if (!value) return;
+    if (typeof value === "string" && value) {
+      setPreviews([value]);
+      setFiles([]);
+    } else if (Array.isArray(value) && value.length > 0) {
+      setPreviews(value);
+      setFiles([]);
+    }
+  }, [value]);
 
   return (
     <div className={`w-full flex flex-col ${className}`}>

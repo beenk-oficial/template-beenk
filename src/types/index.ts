@@ -139,9 +139,12 @@ export type Role = {
 
 export type WhiteLabel = {
   id: string;
-  name: string;
-  logo_url?: string;
-  favicon_url?: string;
+  logo_path?: string;
+  favicon_path?: string;
+  banner_login_path?: string;
+  banner_signup_path?: string;
+  banner_change_password_path?: string;
+  banner_request_password_reset_path?: string;
   colors: Partial<WhitelabelColors>;
 } & Timestamps;
 

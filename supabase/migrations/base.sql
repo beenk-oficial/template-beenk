@@ -61,9 +61,13 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS white_labels (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    name TEXT NOT NULL,
-    logo_url TEXT,
-    favicon_url TEXT,
+    logo_path TEXT,
+    favicon_path TEXT,
+    banner_login_path TEXT,
+    banner_signup_path TEXT,
+    banner_change_password_path TEXT,
+    banner_request_password_reset_path TEXT,
+
     colors JSONB,
 
     created_at TIMESTAMP DEFAULT now(),
@@ -73,6 +77,7 @@ CREATE TABLE IF NOT EXISTS white_labels (
     deleted_at TIMESTAMP,
     deleted_by TEXT
 );
+
 
 CREATE TABLE IF NOT EXISTS companies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -129,7 +129,6 @@ export default function Page() {
       });
 
       toast({ title: t("success"), description: t("company_updated"), type: "success" });
-      fetchCompany();
     } catch (error) {
       toast({ title: t("error"), description: t("error_occurred"), type: "error" });
     } finally {
