@@ -42,7 +42,7 @@ enum AppRoutes {
 }
 
 export default function AppLayout() {
-  const { whitelabel } = useWhitelabel();
+  const { name, company, favicon_path } = useWhitelabel();
   const { user } = useSession();
   const { t } = useTranslation("general");
   const setUser = useUserStore((state) => state.setUser);
@@ -72,7 +72,7 @@ export default function AppLayout() {
     };
 
     checkUser();
-  }, [user, location.pathname]);
+  }, [location.pathname]);
 
   function handleLogout() {
     logout({
@@ -80,6 +80,7 @@ export default function AppLayout() {
       company_id: user?.company_id || "",
     });
     setUser(null as unknown as User);
+    console.error("User logged out");
     navigate("/auth/signin");
   }
 
@@ -91,15 +92,15 @@ export default function AppLayout() {
     },
     teams: [
       {
-        name: whitelabel?.name,
+        name: name,
         logo: () => (
           <img
-            src={whitelabel?.favicon}
-            alt={`${whitelabel?.name} logo`}
+            src={favicon_path}
+            alt={`${name} logo`}
             className="h-6 w-6"
           />
         ),
-        plan: whitelabel?.company?.email,
+        plan: company?.email,
       },
     ],
     navMain: [

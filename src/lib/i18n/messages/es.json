@@ -256,7 +256,21 @@
     "address_city": "Ciudad",
     "address_state": "Estado",
     "address_zip": "Código Postal",
-    "stripe_connect_id": "Stripe Connect ID"
+    "stripe_connect_id": "Stripe Connect ID",
+    "desc_logo": "SVG o PNG (máx. 20MB)",
+    "desc_favicon": "SVG o PNG (máx. 20MB, 32x32px o 64x64px)",
+    "desc_banner": "PNG o JPG (máx. 50MB, recomendado 600x200px)",
+    "whitelabel_saved": "Marca blanca guardada exitosamente.",
+    "logo": "Logo",
+    "favicon": "Favicon",
+    "login_banner": "Banner de Inicio de Sesión",
+    "signup_banner": "Banner de Registro",
+    "change_password_banner": "Banner de Cambio de Contraseña",
+    "request_password_reset_banner": "Banner de Restablecimiento de Contraseña",
+    "colors": "Colores",
+    "primary_color": "Color Primario",
+    "secondary_color": "Color Secundario",
+    "marketing_banners": "Banners de Marketing"
   },
   "landing": {
     "nav_features": "Funcionalidades",

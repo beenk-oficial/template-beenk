@@ -1,23 +1,24 @@
-import { useWhitelabelStore, type WhitelabelColors } from "@/stores/whitelabel";
+import { useWhitelabelStore } from "@/stores/whitelabel";
 import { setRootColors } from "@/utils/setRootColors";
-import { getCompany } from "@/lib/supabase/api/company";
-import { getWhitelabel } from "@/lib/supabase/api/whitelabel";
 
-import { type Company, type WhiteLabel } from "@/types";
+import { type WhitelabelColors } from "@/types";
+import { getImageUrl } from "@/lib/supabase/api/admin/image";
+import { getCompany } from "@/lib/supabase/api/company";
 
 export function useWhitelabel() {
-  const whitelabel = useWhitelabelStore((state) => state);
+  const {
+    colors,
+    name,
+    logo_path,
+    favicon_path,
+    banner_login_path,
+    banner_signup_path,
+    banner_change_password_path,
+    banner_request_password_reset_path,
+    company,
+    ...whitelabel
+  } = useWhitelabelStore();
 
-  const colors = useWhitelabelStore((state) => state.colors);
-  const name = useWhitelabelStore((state) => state.name);
-  const logo = useWhitelabelStore((state) => state.logo);
-  const favicon = useWhitelabelStore((state) => state.favicon);
-
-  const marketing_banner = useWhitelabelStore(
-    (state) => state.marketing_banner
-  );
-  const company = useWhitelabelStore((state) => state.company);
-  const setColors = useWhitelabelStore((state) => state.setColors);
   const setCompany = useWhitelabelStore((state) => state.setCompany);
 
   async function loadCompany({
@@ -27,8 +28,9 @@ export function useWhitelabel() {
     slug?: string;
     domain?: string;
   }) {
-    const response = (await getCompany({ slug, domain })) as Company;
-    if (response.id) setCompany(response);
+    const response = await getCompany({ slug, domain });
+    console.log("Company fetched:", response);
+    setCompany(response);
     return response;
   }
 
@@ -39,37 +41,47 @@ export function useWhitelabel() {
     slug?: string;
     domain?: string;
   }) {
-    const company = await loadCompany({ slug, domain });
-    const response = await getWhitelabel({ company_id: company?.id });
+    try {
+      const company = await loadCompany({ slug, domain });
+      const whitelabel = company.whitelabel || {};
 
-    if ('error' in response && response.error) {
-      console.error("Error fetching whitelabel data:", response.error);
-      return;
+      const logo = whitelabel.logo_path ? await getImageUrl("admin", whitelabel.logo_path) : "";
+      const favicon = whitelabel.favicon_path ? await getImageUrl("admin", whitelabel.favicon_path) : "";
+      const banner_login = whitelabel.banner_login_path ? await getImageUrl("admin", whitelabel.banner_login_path) : "";
+      const banner_signup = whitelabel.banner_signup_path ? await getImageUrl("admin", whitelabel.banner_signup_path) : "";
+      const banner_change_password = whitelabel.banner_change_password_path ? await getImageUrl("admin", whitelabel.banner_change_password_path) : "";
+      const banner_request_password_reset = whitelabel.banner_request_password_reset_path ? await getImageUrl("admin", whitelabel.banner_request_password_reset_path) : "";
+
+      setRootColors(whitelabel.colors as unknown as WhitelabelColors);
+      useWhitelabelStore.setState({
+        name: company.name,
+        company: company,
+        domain: company.domain,
+        slug: company.slug,
+        logo_path: logo,
+        favicon_path: favicon,
+        banner_login_path: banner_login,
+        banner_signup_path: banner_signup,
+        banner_change_password_path: banner_change_password,
+        banner_request_password_reset_path: banner_request_password_reset,
+        colors: whitelabel.colors,
+      });
+    } catch (error) {
+      console.error("Error loading whitelabel:", error);
     }
-
-    if (!('colors' in response)) {
-      console.error("Whitelabel response missing colors property");
-      return;
-    }
-
-    setColors(response.colors);
-    setRootColors(response.colors as unknown as WhitelabelColors);
-    useWhitelabelStore.setState({
-      ...response,
-      name: response.name,
-      logo: response.logo_url,
-      marketing_banner: response.marketing_banner,
-      favicon: response.favicon_url,
-    });
   }
 
   return {
     whitelabel,
+    company,
     colors,
     name,
-    logo,
-    favicon,
-    marketing_banner,
+    logo_path,
+    favicon_path,
+    banner_login_path,
+    banner_signup_path,
+    banner_change_password_path,
+    banner_request_password_reset_path,
     loadWhitelabel,
     loadCompany,
   };

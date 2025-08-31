@@ -257,7 +257,21 @@
     "address_city": "Cidade",
     "address_state": "Estado",
     "address_zip": "CEP",
-    "stripe_connect_id": "Stripe Connect ID"
+    "stripe_connect_id": "Stripe Connect ID",
+    "desc_logo": "SVG ou PNG (máx. 20MB)",
+    "desc_favicon": "SVG ou PNG (máx. 20MB, 32x32px ou 64x64px)",
+    "desc_banner": "PNG ou JPG (máx. 50MB, recomendado 600x200px)",
+    "whitelabel_saved": "Whitelabel salvo com sucesso.",
+    "logo": "Logo",
+    "favicon": "Favicon",
+    "login_banner": "Banner de Login",
+    "signup_banner": "Banner de Cadastro",
+    "change_password_banner": "Banner de Troca de Senha",
+    "request_password_reset_banner": "Banner de Redefinição de Senha",
+    "colors": "Cores",
+    "primary_color": "Cor Primária",
+    "secondary_color": "Cor Secundária",
+    "marketing_banners": "Banners de Marketing"
   },
   "landing": {
     "nav_features": "Funcionalidades",

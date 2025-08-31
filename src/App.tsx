@@ -18,13 +18,14 @@ export default function App({ children }: AppProps) {
 
   const { slug } = useParams();
 
+  //Replace domain when finish
   useEffect(() => {
     setSlug(slug || "");
-    setDomain(window.location.hostname);
+    setDomain("localhost");
 
     loadWhitelabel({
       slug,
-      domain: window.location.hostname,
+      domain: "localhost",
     }).then(() => setLoading(false));
   }, []);
 

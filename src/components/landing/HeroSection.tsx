@@ -16,8 +16,8 @@ export function HeroSection({ colors }: { colors: Record<string, string> }) {
           className="absolute inset-0 -z-10 h-full w-full bg-background bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]"
           style={{
             backgroundImage: `
-              linear-gradient(to right, ${colors["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px),
-              linear-gradient(to bottom, ${colors["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px)
+              linear-gradient(to right, ${colors?.["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px),
+              linear-gradient(to bottom, ${colors?.["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px)
             `
           }}
         ></div>

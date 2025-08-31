@@ -1,4 +1,4 @@
-import type { WhitelabelColors } from "@/stores/whitelabel";
+import type { WhitelabelColors } from "@/types";
 
 export function setRootColors(colors: WhitelabelColors) {
   const root = document.documentElement;

@@ -99,7 +99,7 @@ export function PricingSection({ colors }: { colors: Record<string, string> }) {
   return (
     <section id="pricing" className="w-full py-20 md:py-32 bg-muted/30 relative overflow-hidden">
       <div className="absolute inset-0 -z-10 h-full w-full  bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_40%,transparent_100%)]" style={{
-        backgroundImage: `linear-gradient(to right, ${colors["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px), linear-gradient(to bottom, ${colors["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px)`
+        backgroundImage: `linear-gradient(to right, ${colors?.["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px), linear-gradient(to bottom, ${colors?.["sidebar-border"] || "#f0f0f0"} 1px, transparent 1px)`
       }}></div>
       <div className="container px-4 md:px-6 relative">
         <motion.div

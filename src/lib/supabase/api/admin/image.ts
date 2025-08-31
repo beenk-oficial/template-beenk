@@ -34,13 +34,15 @@ export async function updateImage(
   file: File,
   bucket: string,
   path: string,
-  options?: { cacheControl?: string; upsert?: boolean }
+  options?: { cacheControl?: string; upsert?: boolean, oldPath?: string | null }
 ) {
+  await deleteImages('admin', [options?.oldPath].filter(Boolean) as string[]);
+  
   const { data, error } = await supabase.storage
     .from(bucket)
     .update(path, file, {
-      cacheControl: options?.cacheControl ?? "3600",
       upsert: options?.upsert ?? true,
+      cacheControl: options?.cacheControl ?? "no-cache",
     });
   return { data, error };
 }

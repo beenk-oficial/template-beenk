@@ -67,7 +67,7 @@ const FOOTER_BOTTOM_LINKS = [
 
 export function LandingLayout() {
 	const { t } = useTranslation("landing")
-	const { name: brandName, logo } = useWhitelabel()
+	const { name: brandName, logo_path } = useWhitelabel()
 
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -116,7 +116,7 @@ export function LandingLayout() {
 						style={{ textDecoration: "none" }}
 					>
 						<img
-							src={logo}
+							src={logo_path}
 							alt={`${brandName} logo`}
 							className="h-7 object-contain "
 						/>
@@ -214,7 +214,7 @@ export function LandingLayout() {
 						<div className="space-y-4">
 							<div className="flex items-center gap-2 font-bold">
 								<img
-									src={logo}
+									src={logo_path}
 									alt={`${brandName} logo`}
 									className="h-8 object-contain "
 								/>

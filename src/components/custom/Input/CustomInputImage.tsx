@@ -9,8 +9,8 @@ interface CustomInputImageProps {
   accept?: string;
   allowedFormats?: string[];
   onChange?: (files: File[]) => void;
-  className?: string; 
-  value?: string | string[] | File | File[]; 
+  className?: string;
+  value?: string | string[] | File | File[];
 }
 
 const CustomInputImage: React.FC<CustomInputImageProps> = ({
@@ -21,7 +21,7 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
   accept = "image/png, image/jpeg, image/svg+xml, image/gif",
   allowedFormats,
   onChange,
-  className = "", 
+  className = "",
   value,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
@@ -30,15 +30,15 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
 
   const computedAccept = allowedFormats
     ? allowedFormats
-        .map((f) => {
-          if (f.startsWith(".")) return f;
-          if (f === "jpg") return ".jpg,.jpeg,image/jpeg";
-          if (f === "png") return ".png,image/png";
-          if (f === "svg") return ".svg,image/svg+xml";
-          if (f === "gif") return ".gif,image/gif";
-          return f;
-        })
-        .join(",")
+      .map((f) => {
+        if (f.startsWith(".")) return f;
+        if (f === "jpg") return ".jpg,.jpeg,image/jpeg";
+        if (f === "png") return ".png,image/png";
+        if (f === "svg") return ".svg,image/svg+xml";
+        if (f === "gif") return ".gif,image/gif";
+        return f;
+      })
+      .join(",")
     : accept;
 
   const handleFiles = (selectedFiles: FileList | null) => {
@@ -50,17 +50,31 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
       const mime = file.type;
       const isAllowed =
         !allowedFormats ||
-        allowedFormats.some(
-          (f) =>
-            f.replace(".", "").toLowerCase() === ext ||
-            mime === `image/${f.replace(".", "").toLowerCase()}`
-        );
+        allowedFormats.some((f) => {
+          const cleanFormat = f.replace(".", "").toLowerCase();
+          return (
+            cleanFormat === ext ||
+            mime === `image/${cleanFormat}` ||
+            (cleanFormat === "png" && (mime === "image/png" || mime === "image/x-png"))
+          );
+        });
       if (
         file.size <= maxSizeMB * 1024 * 1024 &&
         isAllowed
       ) {
         validFiles.push(file);
         previewUrls.push(URL.createObjectURL(file));
+      } else {
+        console.log(
+          "[CustomInputImage] Arquivo rejeitado:",
+          file.name,
+          "| tipo:",
+          file.type,
+          "| tamanho:",
+          file.size,
+          "| permitido:",
+          isAllowed
+        );
       }
     });
     setFiles(validFiles);
@@ -122,23 +136,23 @@ const CustomInputImage: React.FC<CustomInputImageProps> = ({
           onChange={(e) => handleFiles(e.target.files)}
         />
         {showSinglePreview ? (
-          <div className="flex flex-col items-center justify-center w-full h-full">
-            <div className="relative rounded-md overflow-hidden border bg-muted flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center w-full h-full bg-white/20">
+            <div className="relative rounded-md overflow-hidden  flex items-center justify-center">
               <img
                 src={previews[0]}
                 alt="preview"
                 className="object-cover w-full h-full"
               />
-              <button
-                type="button"
-                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={(e) => handleRemoveClick(e, 0)}
-                aria-label="Remove image"
-                tabIndex={0}
-              >
-                <IconX size={16} />
-              </button>
             </div>
+            <button
+              type="button"
+              className="absolute cursor-pointer top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={(e) => handleRemoveClick(e, 0)}
+              aria-label="Remove image"
+              tabIndex={0}
+            >
+              <IconX size={16} />
+            </button>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-1 mx-4 py-6">

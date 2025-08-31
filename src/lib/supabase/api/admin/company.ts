@@ -1,12 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import { getCompanyIdFromToken } from "@/utils/api";
 
-export async function getCompany() {
+export async function getCompany({ slug = "", domain = "" }: { slug?: string; domain?: string } = {}) {
   const companyId = await getCompanyIdFromToken();
-  if (!companyId) throw new Error("Missing company_id");
 
   try {
-    const { data, error } = await supabase
+    const query = supabase
       .from("companies")
       .select(`
         *,
@@ -32,12 +31,24 @@ export async function getCompany() {
           colors
         )
       `)
-      .eq("id", companyId)
-      .single();
+
+    if (companyId) {
+      query.eq("id", companyId);
+    } else if (slug) {
+      query.eq("slug", slug);
+    } else if (domain) {
+      query.eq("domain", domain);
+    } else {
+      throw new Error("Missing company_id")
+    }
+
+    const { data, error } = await query.single();
 
     if (error || !data) throw new Error("Company not found");
+
     return data;
   } catch (error) {
+    console.error("Error fetching company:", error);
     throw error;
   }
 }
