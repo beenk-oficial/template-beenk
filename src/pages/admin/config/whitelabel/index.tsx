@@ -110,10 +110,9 @@ const Page = () => {
     return data?.path ?? null;
   }
   async function generateColors(primary: string, secondary: string) {
-    const p = tinycolor(primary);    // NÃO ALTERAMOS
-    const s = tinycolor(secondary);  // NÃO ALTERAMOS
+    const p = tinycolor(primary);    
+    const s = tinycolor(secondary); 
 
-    // ---------- Helpers ----------
     const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
     const toHsl = (c: tinycolor.Instance) => c.toHsl();
 
@@ -128,7 +127,6 @@ const Page = () => {
       if (tinycolor.readability(bg, white) >= 4.5) return "#fff";
       if (tinycolor.readability(bg, black) >= 4.5) return "#111";
 
-      // Ajuste mínimo no candidato mais promissor para atingir 4.5 (sem mexer no bg)
       let candidate = tinycolor.readability(bg, white) > tinycolor.readability(bg, black) ? white : black;
       for (let i = 0; i < 8 && tinycolor.readability(bg, candidate) < 4.5; i++) {
         const hsl = candidate.toHsl();
@@ -138,28 +136,22 @@ const Page = () => {
       return candidate.toHexString();
     }
 
-    // ---------- Base neutra moderna ----------
-    // Mistura p + s + cinza só para o BACKGROUND neutro (não altera p/s)
     const neutralMix = tinycolor.mix(tinycolor.mix(p, s, 50), "#808080", 35);
-    const background = tinycolor({ ...neutralMix.toHsl(), s: 0.10, l: 0.12 }); // dark elegante
+    const background = tinycolor({ ...neutralMix.toHsl(), s: 0.10, l: 0.12 });
 
-    // Hierarquia de superfícies (steps coerentes)
     const card = tweak(background, { l: +0.06 });
     const popover = tweak(background, { l: +0.09 });
     const input = tweak(background, { l: +0.04 });
     const border = tweak(background, { l: +0.16 });
     const ring = p.clone().lighten(20);
 
-    // Sidebar discreta, derivada da secondary (sem mudar secondary em si)
     const sidebar = tweak(s, { l: -0.20, s: -0.10 });
     const sidebarPrimary = p.clone().lighten(18);
     const sidebarAccent = s.clone().saturate(15).lighten(8);
 
-    // Accents e muted
     const accent = s.clone().saturate(20).lighten(8);
     const muted = tweak(background, { l: +0.02, s: -0.05 });
 
-    // Charts: variações harmônicas (derivadas, sem tocar p/s originais)
     const chart1 = p.clone().spin(10).saturate(5).lighten(10);
     const chart2 = s.clone().spin(-10).saturate(5).lighten(10);
     const chart3 = accent.clone().spin(30).lighten(6);
@@ -167,7 +159,6 @@ const Page = () => {
     const chart5 = background.clone().lighten(22);
 
     return {
-      // Fundo e superfícies
       background: background.toHexString(),
       foreground: ensureReadable(background),
       radius: "8px",
@@ -178,14 +169,12 @@ const Page = () => {
       popover: popover.toHexString(),
       "popover-foreground": ensureReadable(popover),
 
-      // MARCAS (mantidas exatamente como recebidas)
       primary: p.toHexString(),
       "primary-foreground": ensureReadable(p),
 
       secondary: s.toHexString(),
       "secondary-foreground": ensureReadable(s),
 
-      // Estado/accents
       muted: muted.toHexString(),
       "muted-foreground": ensureReadable(muted),
 
@@ -194,19 +183,16 @@ const Page = () => {
 
       destructive: "#DC3545",
 
-      // Contornos/inputs/anéis
       border: border.toHexString(),
       input: input.toHexString(),
       ring: ring.toHexString(),
 
-      // Charts
       chart1: chart1.toHexString(),
       chart2: chart2.toHexString(),
       chart3: chart3.toHexString(),
       chart4: chart4.toHexString(),
       chart5: chart5.toHexString(),
 
-      // Sidebar
       sidebar: sidebar.toHexString(),
       "sidebar-foreground": ensureReadable(sidebar),
 
